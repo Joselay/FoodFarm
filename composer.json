@@ -1,0 +1,12 @@
+{
+    "name": "tongm/foodfarm",
+    "description": "FoodFarm for WBD Midterm",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Joselay",
+            "email": "tongmenglaysmae5@gmail.com"
+        }
+    ],
+    "require": {}
+}
