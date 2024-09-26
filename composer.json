@@ -1,10 +1,13 @@
 {
     "name": "tongm/foodfarm",
-    "description": "FoodFarm for WBD Midterm",
-    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Tongm\\Foodfarm\\": "src/"
+        }
+    },
     "authors": [
         {
-            "name": "Joselay",
+            "name": "Smae Tongmenglay",
             "email": "tongmenglaysmae5@gmail.com"
         }
     ],
