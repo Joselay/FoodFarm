@@ -75,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['tran_id'])) {
 $stmt->close();
 $conn->close();
 ?>
-
 <?php if (isset($_SESSION['toast_message'])): ?>
   <div id="toast" class="z-[100] w-[22rem] fixed top-0 left-[40%] mt-4">
     <div class="flex w-full max-w-sm py-5 px-6 bg-white rounded-xl border border-gray-200 shadow-sm mb-4 gap-4" role="alert">
@@ -268,6 +267,15 @@ $conn->close();
       </div>
     </div>
   </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      document
+        .getElementById("checkout_button")
+        .addEventListener("click", function() {
+          AbaPayway.checkout();
+        });
+    });
+  </script>
 
 </body>
 

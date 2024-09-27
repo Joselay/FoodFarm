@@ -1,17 +1,62 @@
 <?php
 session_start();
 
-
 if (!isset($_SESSION['user_id'])) {
   header("Location: ./views/signin.php");
   exit();
 }
+require "../config/database.php";
 
 $userName = $_SESSION['user_username'];
 $userEmail = $_SESSION['user_email'];
 $imageUrl = $_SESSION['user_image_url'];
 
+// Fetch user's balance
+$userId = $_SESSION['user_id'];
+$sql = "SELECT balance FROM users WHERE id = $userId";
+$result = mysqli_query($conn, $sql);
 
+if ($result) {
+  $row = mysqli_fetch_assoc($result);
+  $userBalance = $row['balance'];
+} else {
+  echo "Error fetching balance: " . mysqli_error($conn);
+}
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  // Update username if provided
+  if (!empty($_POST['new_username']) && $_POST['new_username'] !== $userName) {
+    $newUsername = mysqli_real_escape_string($conn, $_POST['new_username']);
+    $sql = "UPDATE users SET username = '$newUsername' WHERE id = $userId";
+    if (mysqli_query($conn, $sql)) {
+      $_SESSION['user_username'] = $newUsername;
+    } else {
+      echo "Error updating username: " . mysqli_error($conn);
+    }
+  }
+
+  // Update email if provided
+  if (!empty($_POST['new_email']) && $_POST['new_email'] !== $userEmail) {
+    $newEmail = mysqli_real_escape_string($conn, $_POST['new_email']);
+    $sql = "UPDATE users SET email = '$newEmail' WHERE id = $userId";
+    if (mysqli_query($conn, $sql)) {
+      $_SESSION['user_email'] = $newEmail;
+    } else {
+      echo "Error updating email: " . mysqli_error($conn);
+    }
+  }
+
+  if (!empty($_POST['new_password'])) {
+    $newPassword = password_hash($_POST['new_password'], PASSWORD_BCRYPT);
+    $sql = "UPDATE users SET password = '$newPassword' WHERE id = $userId";
+    if (!mysqli_query($conn, $sql)) {
+      echo "Error updating password: " . mysqli_error($conn);
+    }
+  }
+
+  mysqli_close($conn);
+}
 ?>
 
 
@@ -28,6 +73,7 @@ $imageUrl = $_SESSION['user_image_url'];
     href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
     rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
 
 
@@ -95,6 +141,14 @@ $imageUrl = $_SESSION['user_image_url'];
 
     <main class="px-4 py-16 sm:px-6 lg:flex-auto lg:px-0 lg:py-20">
       <div class="mx-auto max-w-2xl space-y-16 sm:space-y-20 lg:mx-0 lg:max-w-none">
+        <div class="pt-6 sm:flex">
+          <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Balance</dt>
+          <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
+            <div class="text-gray-900" id="balance-display"><?= $userBalance; ?> USD</div>
+          </dd>
+        </div>
+
+
         <div>
           <h2 class="text-base font-semibold leading-7 text-gray-900">Profile</h2>
           <p class="mt-1 text-sm leading-6 text-gray-500">This information will be displayed publicly so be careful what you share.</p>
@@ -103,22 +157,35 @@ $imageUrl = $_SESSION['user_image_url'];
             <div class="pt-6 sm:flex">
               <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Username</dt>
               <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                <div class="text-gray-900"><?= $userName; ?></div>
-                <button type="button" class="font-semibold text-green-600 hover:text-green-500">Update</button>
+                <div class="text-gray-900" id="username-display"><?= $userName; ?></div>
+                <form id="update-form" method="POST">
+                  <input type="text" name="new_username" id="username-input" class="hidden border border-gray-300 p-2" value="<?= $userName; ?>" />
+                </form>
+                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="toggleEdit(this)">Update</button>
+                <button type="submit" form="update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="save-btn">Save</button>
               </dd>
             </div>
+
             <div class="pt-6 sm:flex">
               <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Email address</dt>
               <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                <div class="text-gray-900"><?= $userEmail; ?></div>
-                <button type="button" class="font-semibold text-green-600 hover:text-green-500">Update</button>
+                <div class="text-gray-900" id="email-display"><?= $userEmail; ?></div>
+                <form id="email-update-form" method="POST">
+                  <input type="text" name="new_email" id="email-input" class="hidden border border-gray-300 p-2" value="<?= $userEmail; ?>" />
+                </form>
+                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="toggleEmailEdit(this)">Update</button>
+                <button type="submit" form="email-update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="email-save-btn">Save</button>
               </dd>
             </div>
             <div class="pt-6 sm:flex">
               <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Password</dt>
               <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
-                <div class="text-gray-900">●●●●●●●●●●</div>
-                <button type="button" class="font-semibold text-green-600 hover:text-green-500">Update</button>
+                <div class="text-gray-900" id="password-display">●●●●●●●●●●</div>
+                <form id="password-update-form" method="POST">
+                  <input type="password" name="new_password" id="password-input" class="hidden border border-gray-300 p-2" placeholder="Enter new password" />
+                </form>
+                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="togglePasswordEdit(this)">Update</button>
+                <button type="submit" form="password-update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="password-save-btn">Save</button>
               </dd>
             </div>
 
@@ -127,6 +194,40 @@ $imageUrl = $_SESSION['user_image_url'];
     </main>
   </div>
 
+  <script>
+    function toggleEdit(button) {
+      const display = document.getElementById('username-display');
+      const input = document.getElementById('username-input');
+      const saveBtn = document.getElementById('save-btn');
+
+      display.classList.toggle('hidden');
+      input.classList.toggle('hidden');
+      saveBtn.classList.toggle('hidden');
+      button.classList.toggle('hidden');
+    }
+
+    function toggleEmailEdit(button) {
+      const display = document.getElementById('email-display');
+      const input = document.getElementById('email-input');
+      const saveBtn = document.getElementById('email-save-btn');
+
+      display.classList.toggle('hidden');
+      input.classList.toggle('hidden');
+      saveBtn.classList.toggle('hidden');
+      button.classList.toggle('hidden');
+    }
+
+    function togglePasswordEdit(button) {
+      const display = document.getElementById('password-display');
+      const input = document.getElementById('password-input');
+      const saveBtn = document.getElementById('password-save-btn');
+
+      display.classList.toggle('hidden');
+      input.classList.toggle('hidden');
+      saveBtn.classList.toggle('hidden');
+      button.classList.toggle('hidden');
+    }
+  </script>
 </body>
 
 </html>
