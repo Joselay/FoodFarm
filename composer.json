@@ -1,0 +1,15 @@
+{
+    "name": "tongm/foodfarm",
+    "autoload": {
+        "psr-4": {
+            "Tongm\\Foodfarm\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Smae Tongmenglay",
+            "email": "tongmenglaysmae5@gmail.com"
+        }
+    ],
+    "require": {}
+}
