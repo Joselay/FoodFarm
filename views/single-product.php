@@ -1,7 +1,6 @@
 <?php
 require "../utils/dd.php";
 session_start();
-
 if (!isset($_SESSION['user_id'])) {
   header("Location: ./signin.php");
   exit();
@@ -22,9 +21,13 @@ $stmt->execute();
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
+$_SESSION['product_id'] = $product['id'];
+
+
 if (!$product) {
   die("Product not found.");
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
   if ($product['stock_quantity'] > 0) {
@@ -110,6 +113,7 @@ $conn->close();
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://checkout.payway.com.kh/plugins/checkout2-0.js"></script>
+  <script defer src="../public/js/script.js"></script>
 </head>
 <style>
   html {
@@ -118,54 +122,7 @@ $conn->close();
 </style>
 
 <body style="font-family: 'Inter';" class="h-screen w-screen grid place-items-center">
-  <header class="absolute inset-x-0 top-0 z-50">
-    <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
-      <div class="flex lg:flex-1">
-        <a href="/foodfarm" class="-m-1.5 p-1.5">
-          <span class="sr-only">Your Company</span>
-          <img class="h-8 w-auto" src="../public/images/logo.svg" alt="">
-        </a>
-      </div>
-      <div class="flex lg:hidden">
-        <button type="button" class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-700">
-          <span class="sr-only">Open main menu</span>
-          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
-        </button>
-      </div>
-      <div class="hidden lg:flex lg:gap-x-12">
-        <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Features</a>
-        <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Marketplace</a>
-        <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Company</a>
-      </div>
-
-      <div class="hidden lg:flex lg:flex-1 lg:justify-end items-center gap-6">
-
-        <?php if ($userName): ?>
-          <div class="relative">
-            <button type="button" class="-m-1.5 flex items-center p-1.5" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-              <img class="h-8 w-8 rounded-full bg-gray-50" src="<?php echo htmlspecialchars($imageUrl); ?>" alt="">
-              <span class="hidden lg:flex lg:items-center">
-                <span class="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true"><?php echo htmlspecialchars($userName); ?></span>
-                <svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-              </span>
-            </button>
-            <div id="user-menu" class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none opacity-0 pointer-events-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-1" onclick="signOut()">Sign out</a>
-
-            </div>
-          </div>
-        <?php else: ?>
-          <a href="./views/signin.php" class="text-sm font-semibold leading-6 text-gray-900">Log in <span aria-hidden="true">&rarr;</span></a>
-        <?php endif; ?>
-      </div>
-    </nav>
-
-  </header>
+  <?php require "../components/header.php"; ?>
 
   <div class="bg-white">
     <div class="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-8 lg:px-8">
@@ -311,75 +268,7 @@ $conn->close();
       </div>
     </div>
   </div>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      document.getElementById('checkout_button').addEventListener('click', function() {
-        AbaPayway.checkout();
-      });
-    });
 
-    function signOut() {
-      window.location.href = './signout.php';
-    }
-    const userMenuButton = document.getElementById('user-menu-button');
-    const userMenu = document.getElementById('user-menu');
-    let isOpen = false;
-
-    userMenuButton.addEventListener('click', () => {
-      isOpen = !isOpen;
-      userMenu.setAttribute('aria-expanded', isOpen);
-
-      if (isOpen) {
-        gsap.to(userMenu, {
-          duration: 0.2,
-          opacity: 1,
-          pointerEvents: 'auto',
-          ease: 'power1.out'
-        });
-      } else {
-        gsap.to(userMenu, {
-          duration: 0.2,
-          opacity: 0,
-          pointerEvents: 'none',
-          ease: 'power1.in'
-        });
-      }
-    });
-
-    document.addEventListener('click', (event) => {
-      if (isOpen && !userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
-        isOpen = false;
-        gsap.to(userMenu, {
-          duration: 0.3,
-          opacity: 0,
-          pointerEvents: 'none',
-          ease: 'power1.in'
-        });
-        userMenuButton.setAttribute('aria-expanded', 'false');
-      }
-    });
-    const toast = document.getElementById('toast');
-
-    gsap.fromTo(toast, {
-      autoAlpha: 0,
-      y: -50
-    }, {
-      autoAlpha: 1,
-      y: 0,
-      duration: 0.5,
-      ease: "power2.out",
-      onComplete: () => {
-        setTimeout(() => {
-          gsap.to(toast, {
-            autoAlpha: 0,
-            y: -50,
-            duration: 0.5,
-            ease: "power2.in"
-          });
-        }, 3000);
-      }
-    });
-  </script>
 </body>
 
 </html>
