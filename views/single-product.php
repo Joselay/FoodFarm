@@ -74,7 +74,6 @@ $conn->close();
 ?>
 
 <?php if (isset($_SESSION['toast_message'])): ?>
-
   <div id="toast" class="z-[100] w-[22rem] fixed top-0 left-[40%] mt-4">
     <div class="flex w-full max-w-sm py-5 px-6 bg-white rounded-xl border border-gray-200 shadow-sm mb-4 gap-4" role="alert">
       <div class="inline-flex space-x-3">
@@ -119,7 +118,6 @@ $conn->close();
 </style>
 
 <body style="font-family: 'Inter';" class="h-screen w-screen grid place-items-center">
-
   <header class="absolute inset-x-0 top-0 z-50">
     <nav class="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
       <div class="flex lg:flex-1">
@@ -360,7 +358,6 @@ $conn->close();
         userMenuButton.setAttribute('aria-expanded', 'false');
       }
     });
-
     const toast = document.getElementById('toast');
 
     gsap.fromTo(toast, {
