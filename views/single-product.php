@@ -50,27 +50,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
   }
 }
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['tran_id'])) {
-  // Assume you have a function to handle the payment response
   $transactionId = $_POST['tran_id'];
-  // Validate the payment response here (verify with PayWay)
-
-  // If payment is successful
   if ($paymentSuccess) {
-    // Update stock quantity in the database
-    $productId = $product['id']; // Assume you have the product ID
-    $newQuantity = $product['stock_quantity'] - 1;
+    $stmt = $conn->prepare("INSERT INTO orders (user_id, total_amount, status, created_at) VALUES (?, ?, ?, NOW())");
+    $stmt->bind_param("ids", $_SESSION['user_id'], $product['price'], $status);
+    $status = 'completed';
+    $stmt->execute();
 
-    // Update your database here (using a prepared statement for security)
-    $stmt = $pdo->prepare("UPDATE products SET stock_quantity = ? WHERE id = ?");
-    $stmt->execute([$newQuantity, $productId]);
+    $orderId = $stmt->insert_id;
 
-    // Optionally, redirect or show a success message
-    header("Location: success_page.php");
+    $checkStmt = $conn->prepare("SELECT quantity FROM order_items WHERE order_id = ? AND product_id = ?");
+    $checkStmt->bind_param("ii", $orderId, $product['id']);
+    $checkStmt->execute();
+    $checkResult = $checkStmt->get_result();
+
+    if ($checkResult->num_rows > 0) {
+      $existingItem = $checkResult->fetch_assoc();
+      $newQuantity = $existingItem['quantity'] + 1;
+
+      $updateStmt = $conn->prepare("UPDATE order_items SET quantity = ? WHERE order_id = ? AND product_id = ?");
+      $updateStmt->bind_param("iii", $newQuantity, $orderId, $product['id']);
+      $updateStmt->execute();
+      $updateStmt->close();
+    } else {
+      $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+      $stmt->bind_param("iiid", $orderId, $product['id'], $quantity, $product['price']);
+      $quantity = 1;
+      $stmt->execute();
+    }
+
+    $_SESSION['toast_message'] = "Order placed successfully!";
+    header("Location: order_detail.php?id=" . $orderId);
     exit();
   } else {
-    // Handle payment failure
+    echo "Payment failed. Please try again.";
   }
 }
+
 
 $stmt->close();
 $conn->close();

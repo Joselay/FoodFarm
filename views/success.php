@@ -5,8 +5,8 @@ session_start();
 
 $productId = $_SESSION['product_id'];
 $userId = $_SESSION['user_id'];
+$quantity = 1;
 
-// Fetch the product price
 $productQuery = "SELECT price FROM products WHERE id = ?";
 $productStmt = $conn->prepare($productQuery);
 $productStmt->bind_param("i", $productId);
@@ -17,7 +17,6 @@ $product = $productResult->fetch_assoc();
 if ($product) {
     $productPrice = $product['price'];
 
-    // Fetch the user's current balance
     $userQuery = "SELECT balance FROM users WHERE id = ?";
     $userStmt = $conn->prepare($userQuery);
     $userStmt->bind_param("i", $userId);
@@ -28,24 +27,51 @@ if ($product) {
     if ($user) {
         $currentBalance = $user['balance'];
 
-        // Check if the user has enough balance
         if ($currentBalance >= $productPrice) {
-            // Deduct the product price from the user's balance
             $newBalance = $currentBalance - $productPrice;
             $updateBalanceQuery = "UPDATE users SET balance = ? WHERE id = ?";
             $updateBalanceStmt = $conn->prepare($updateBalanceQuery);
             $updateBalanceStmt->bind_param("di", $newBalance, $userId);
             $updateBalanceStmt->execute();
 
-            // Update the stock quantity
             $updateStockQuery = "UPDATE products SET stock_quantity = stock_quantity - 1 WHERE id = ?";
             $updateStockStmt = $conn->prepare($updateStockQuery);
             $updateStockStmt->bind_param("i", $productId);
             $updateStockStmt->execute();
 
-            // Close statements
+
+            $insertOrderQuery = "INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'completed')";
+            $insertOrderStmt = $conn->prepare($insertOrderQuery);
+            $insertOrderStmt->bind_param("id", $userId, $productPrice);
+            $insertOrderStmt->execute();
+            $orderId = $insertOrderStmt->insert_id;
+
+            $checkOrderItemQuery = "SELECT quantity FROM order_items WHERE order_id = ? AND product_id = ?";
+            $checkOrderItemStmt = $conn->prepare($checkOrderItemQuery);
+            $checkOrderItemStmt->bind_param("ii", $orderId, $productId);
+            $checkOrderItemStmt->execute();
+            $checkOrderItemResult = $checkOrderItemStmt->get_result();
+
+            if ($checkOrderItemResult->num_rows > 0) {
+                $existingItem = $checkOrderItemResult->fetch_assoc();
+                $newQuantity = $existingItem['quantity'] + 1;
+                $updateQuantityQuery = "UPDATE order_items SET quantity = ? WHERE order_id = ? AND product_id = ?";
+                $updateQuantityStmt = $conn->prepare($updateQuantityQuery);
+                $updateQuantityStmt->bind_param("iii", $newQuantity, $orderId, $productId);
+                $updateQuantityStmt->execute();
+                $updateQuantityStmt->close();
+            } else {
+                $insertOrderItemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
+                $insertOrderItemStmt = $conn->prepare($insertOrderItemQuery);
+                $insertOrderItemStmt->bind_param("iiid", $orderId, $productId, $quantity, $productPrice);
+                $insertOrderItemStmt->execute();
+                $insertOrderItemStmt->close();
+            }
+
             $updateBalanceStmt->close();
             $updateStockStmt->close();
+            $insertOrderStmt->close();
+            $checkOrderItemStmt->close();
         } else {
             echo "Insufficient balance.";
             exit();
@@ -85,7 +111,7 @@ mysqli_close($conn);
             <p class="mt-6 text-base leading-7 text-gray-600">Thank you! Your transaction has been successfully processed.</p>
             <div class="mt-10 flex items-center justify-center gap-x-6">
                 <a href="/foodfarm" class="rounded-md bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Go back home</a>
-                <a href="#" class="text-sm font-semibold text-gray-900">View transaction details <span aria-hidden="true">&rarr;</span></a>
+                <a href="./orders.php" class="text-sm font-semibold text-gray-900">View transaction details <span aria-hidden="true">&rarr;</span></a>
             </div>
         </div>
     </main>
