@@ -1,4 +1,5 @@
 <?php
+require "../utils/dd.php";
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -18,7 +19,7 @@ $sql = "
            o.total_amount, 
            o.status, 
            o.created_at, 
-           SUM(oi.quantity) AS quantity,  -- Sum the quantities
+           SUM(oi.quantity) AS quantity,
            p.price AS item_price,
            p.name AS product_name, 
            p.image_url
@@ -26,7 +27,7 @@ $sql = "
     LEFT JOIN order_items oi ON o.id = oi.order_id
     LEFT JOIN products p ON oi.product_id = p.id
     WHERE o.user_id = ?
-    GROUP BY o.id, oi.product_id  -- Group by order ID and product ID
+    GROUP BY o.id, oi.product_id ORDER BY o.created_at DESC
 ";
 
 
@@ -107,11 +108,11 @@ if (!$result) {
 
                                     <tbody class="divide-y divide-gray-200 bg-white">
                                         <?php while ($row = mysqli_fetch_assoc($result)):
-                                            $lineTotal = $row['item_price'] * $row['quantity']; // Calculate total for the line item
+                                            $lineTotal = $row['item_price'] * $row['quantity'];
                                         ?>
                                             <tr>
                                                 <td class="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
-                                                    <div class="font-medium text-gray-900">#<?= htmlspecialchars($row['order_id']) ?></div>
+                                                    <div class="font-medium text-gray-900"><?= htmlspecialchars($row['order_id']) ?></div>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
                                                     <div class="flex items-center">
@@ -137,19 +138,13 @@ if (!$result) {
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
-
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
+        </main>
     </div>
-    </div>
-    </div>
-    </main>
-    </div>
-
 
 </body>
 

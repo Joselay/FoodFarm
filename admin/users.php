@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Users</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="icon" href="../public/images/apple.svg" type="image/icon type">
 
@@ -65,7 +65,7 @@
             </div>
             <div class="hidden lg:flex lg:gap-x-12">
                 <a href="./products.php" class="text-sm font-semibold leading-6 text-gray-900">Products</a>
-                <a href="./users.php" class="text-sm font-semibold leading-6 text-gray-900">Users</a>
+                <a href="./users.php" class="text-sm font-semibold leading-6 text-green-500">Users</a>
             </div>
             <div class="hidden lg:flex lg:flex-1 lg:justify-end justify-center items-center gap-2">
                 <img class="inline-block h-8 w-8 rounded-full object-cover" src="https://cdn.oneesports.gg/cdn-data/2023/04/Anime_DemonSlayer_Muzan_3-450x253.jpg" alt="">

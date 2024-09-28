@@ -1,5 +1,4 @@
 <?php
-require "../utils/dd.php";
 require "../config/database.php";
 session_start();
 

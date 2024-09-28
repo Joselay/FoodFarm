@@ -1,10 +1,10 @@
 <?php
-require "../utils/dd.php";
 session_start();
 if (!isset($_SESSION['user_id'])) {
   header("Location: ./signin.php");
   exit();
 }
+
 
 $userName = $_SESSION['user_username'];
 $userEmail = $_SESSION['user_email'];

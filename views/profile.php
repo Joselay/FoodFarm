@@ -11,7 +11,6 @@ $userName = $_SESSION['user_username'];
 $userEmail = $_SESSION['user_email'];
 $imageUrl = $_SESSION['user_image_url'];
 
-// Fetch user's balance
 $userId = $_SESSION['user_id'];
 $sql = "SELECT balance FROM users WHERE id = $userId";
 $result = mysqli_query($conn, $sql);
@@ -25,7 +24,6 @@ if ($result) {
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  // Update username if provided
   if (!empty($_POST['new_username']) && $_POST['new_username'] !== $userName) {
     $newUsername = mysqli_real_escape_string($conn, $_POST['new_username']);
     $sql = "UPDATE users SET username = '$newUsername' WHERE id = $userId";
@@ -36,7 +34,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
   }
 
-  // Update email if provided
   if (!empty($_POST['new_email']) && $_POST['new_email'] !== $userEmail) {
     $newEmail = mysqli_real_escape_string($conn, $_POST['new_email']);
     $sql = "UPDATE users SET email = '$newEmail' WHERE id = $userId";
