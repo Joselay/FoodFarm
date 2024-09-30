@@ -1,37 +1,28 @@
 <?php
-// Database connection settings
-$servername = "localhost"; // Change if necessary
-$username = "jose"; // Your database username
-$password = "jose"; // Your database password
-$dbname = "jose"; // Your database name
+$servername = "localhost";
+$username = "jose";
+$password = "jose";
+$dbname = "jose";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
 if ($conn->connect_error) {
   die("Connection failed: " . $conn->connect_error);
 }
 
-// Define number of results per page
-$results_per_page = 12; // You can change this number to control how many products per page
+$results_per_page = 12;
 
-// Find out the number of results stored in database
 $sql_count = "SELECT COUNT(id) AS total FROM products";
 $result_count = $conn->query($sql_count);
 $row_count = $result_count->fetch_assoc();
 $total_products = $row_count['total'];
 
-// Determine number of total pages available
 $total_pages = ceil($total_products / $results_per_page);
 
-// Get the current page or set default to 1
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int) $_GET['page'] : 1;
 
-// Calculate the starting limit for the results on the displaying page
 $starting_limit = ($page - 1) * $results_per_page;
 
-// SQL query to retrieve selected results per page
 $sql = "SELECT id, name, description, price,stock_quantity, image_url FROM products LIMIT $starting_limit, $results_per_page";
 $result = $conn->query($sql);
 ?>
@@ -71,10 +62,8 @@ $result = $conn->query($sql);
       <?php endif; ?>
     </div>
 
-    <!-- Pagination controls -->
     <div class="flex items-center justify-between mt-8 border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
       <div class="flex flex-1 justify-between sm:hidden">
-        <!-- Previous Button for Small Screens -->
         <?php if ($page > 1): ?>
           <a href="?page=<?php echo $page - 1; ?>" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
         <?php endif; ?>
@@ -97,7 +86,6 @@ $result = $conn->query($sql);
         </div>
         <div>
           <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            <!-- Previous Button -->
             <?php if ($page > 1): ?>
               <a href="?page=<?php echo $page - 1; ?>" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
                 <span class="sr-only">Previous</span>
@@ -107,12 +95,10 @@ $result = $conn->query($sql);
               </a>
             <?php endif; ?>
 
-            <!-- Page Numbers -->
             <?php for ($i = 1; $i <= $total_pages; $i++): ?>
               <a href="?page=<?php echo $i; ?>" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold <?php echo ($i == $page) ? 'bg-green-600 text-white' : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50'; ?> focus:z-20 focus:outline-offset-0"><?php echo $i; ?></a>
             <?php endfor; ?>
 
-            <!-- Next Button -->
             <?php if ($page < $total_pages): ?>
               <a href="?page=<?php echo $page + 1; ?>" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
                 <span class="sr-only">Next</span>
@@ -130,5 +116,5 @@ $result = $conn->query($sql);
 </div>
 
 <?php
-$conn->close(); // Close the database connection
+$conn->close();
 ?>

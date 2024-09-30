@@ -13,6 +13,7 @@ $imageUrl = $_SESSION['user_image_url'];
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 require_once '../config/database.php';
+require_once "../utils/dd.php";
 
 $sql = "SELECT * FROM products WHERE id = ?";
 $stmt = $conn->prepare($sql);
@@ -27,66 +28,6 @@ $_SESSION['product_id'] = $product['id'];
 if (!$product) {
   die("Product not found.");
 }
-
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
-  if ($product['stock_quantity'] > 0) {
-    $updateSql = "UPDATE products SET stock_quantity = stock_quantity - 1 WHERE id = ?";
-    $updateStmt = $conn->prepare($updateSql);
-    $updateStmt->bind_param("i", $id);
-    $updateStmt->execute();
-
-    if ($updateStmt->affected_rows > 0) {
-      $_SESSION['toast_message'] = "Product added successfully!";
-      header("Location: " . $_SERVER['REQUEST_URI']);
-      exit();
-    } else {
-      echo "Error updating stock quantity.";
-    }
-
-    $updateStmt->close();
-  } else {
-    echo "Product is out of stock.";
-  }
-}
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['tran_id'])) {
-  $transactionId = $_POST['tran_id'];
-  if ($paymentSuccess) {
-    $stmt = $conn->prepare("INSERT INTO orders (user_id, total_amount, status, created_at) VALUES (?, ?, ?, NOW())");
-    $stmt->bind_param("ids", $_SESSION['user_id'], $product['price'], $status);
-    $status = 'completed';
-    $stmt->execute();
-
-    $orderId = $stmt->insert_id;
-
-    $checkStmt = $conn->prepare("SELECT quantity FROM order_items WHERE order_id = ? AND product_id = ?");
-    $checkStmt->bind_param("ii", $orderId, $product['id']);
-    $checkStmt->execute();
-    $checkResult = $checkStmt->get_result();
-
-    if ($checkResult->num_rows > 0) {
-      $existingItem = $checkResult->fetch_assoc();
-      $newQuantity = $existingItem['quantity'] + 1;
-
-      $updateStmt = $conn->prepare("UPDATE order_items SET quantity = ? WHERE order_id = ? AND product_id = ?");
-      $updateStmt->bind_param("iii", $newQuantity, $orderId, $product['id']);
-      $updateStmt->execute();
-      $updateStmt->close();
-    } else {
-      $stmt = $conn->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
-      $stmt->bind_param("iiid", $orderId, $product['id'], $quantity, $product['price']);
-      $quantity = 1;
-      $stmt->execute();
-    }
-
-    $_SESSION['toast_message'] = "Order placed successfully!";
-    header("Location: order_detail.php?id=" . $orderId);
-    exit();
-  } else {
-    echo "Payment failed. Please try again.";
-  }
-}
-
 
 $stmt->close();
 $conn->close();
@@ -176,30 +117,28 @@ $conn->close();
           </div>
 
           <div class="mt-4 space-y-6">
+
             <p class="text-base text-gray-500">
               <?php echo $product ? $product['description'] : ''; ?>
             </p>
           </div>
 
-          <?php
-          if ($product['stock_quantity'] > 0) {
-            echo ' <div class="mt-6 flex items-center">
-            <svg class="h-5 w-5 flex-shrink-0 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-            </svg>
-            <p class="ml-2 text-sm text-gray-500">In stock and ready to ship</p>
-          </div>';
-          } else {
-            echo ' <div class="mt-6 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="red" class="size-5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
+          <?php if ($product['stock_quantity'] > 0): ?>
+            <div class="flex items-center mt-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 stroke-green-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              <p class="ml-2 text-sm text-gray-500">In stock and ready to ship</p>
+            </div>
+          <?php else: ?>
+            <div class="flex items-center mt-6">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 stroke-red-500">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+              </svg>
 
-            <p class="ml-2 text-sm text-gray-500">Out of stock</p>
-          </div>';
-          }
-          ?>
-
+              <p class="ml-2 text-sm text-gray-500">Out of stock</p>
+            </div>
+          <?php endif; ?>
         </section>
       </div>
 
@@ -265,6 +204,7 @@ $conn->close();
 
             <?php if ($product['stock_quantity'] > 0): ?>
               <div class="mt-10">
+
                 <button type="submit" name="add_to_cart" class="flex w-full items-center justify-center rounded-md border border-transparent bg-green-600 px-8 py-3 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-gray-50" id="checkout_button">
                   Purchase
                 </button>
@@ -277,9 +217,6 @@ $conn->close();
               </div>
             <?php endif; ?>
           </form>
-
-
-
       </div>
     </div>
   </div>

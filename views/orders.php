@@ -16,18 +16,17 @@ $imageUrl = $_SESSION['user_image_url'];
 
 $sql = "
     SELECT o.id AS order_id, 
-           o.total_amount, 
+           o.quantity, 
+           o.total_price, 
            o.status, 
-           o.created_at, 
-           SUM(oi.quantity) AS quantity,
-           p.price AS item_price,
+           o.order_date AS created_at, 
            p.name AS product_name, 
+           p.price AS item_price, 
            p.image_url
     FROM orders o
-    LEFT JOIN order_items oi ON o.id = oi.order_id
-    LEFT JOIN products p ON oi.product_id = p.id
+    LEFT JOIN products p ON o.product_id = p.id
     WHERE o.user_id = ?
-    GROUP BY o.id, oi.product_id ORDER BY o.created_at DESC
+    ORDER BY o.order_date DESC
 ";
 
 
@@ -35,6 +34,7 @@ $stmt = $conn->prepare($sql);
 $stmt->bind_param('i', $userId);
 $stmt->execute();
 $result = $stmt->get_result();
+
 
 if (!$result) {
     echo "Error fetching orders: " . mysqli_error($conn);
@@ -99,7 +99,7 @@ if (!$result) {
                                             <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Order ID</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Product</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Unit Price</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Quantity</th> <!-- Added Quantity Header -->
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Quantity</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Total Amount</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
                                             <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Created At</th>
@@ -107,37 +107,38 @@ if (!$result) {
                                     </thead>
 
                                     <tbody class="divide-y divide-gray-200 bg-white">
-                                        <?php while ($row = mysqli_fetch_assoc($result)):
-                                            $lineTotal = $row['item_price'] * $row['quantity'];
-                                        ?>
+                                        <?php while ($row = mysqli_fetch_assoc($result)): ?>
                                             <tr>
                                                 <td class="whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
                                                     <div class="font-medium text-gray-900"><?= htmlspecialchars($row['order_id']) ?></div>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
                                                     <div class="flex items-center">
-                                                        <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['product_name']) ?>" class="w-10 h-10 mr-2">
+                                                        <img src="<?= htmlspecialchars($row['image_url']) ?>" alt="<?= htmlspecialchars($row['product_name']) ?>" class="w-10 h-10 mr-2 object-cover">
                                                         <span><?= htmlspecialchars($row['product_name']) ?></span>
                                                     </div>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-                                                    $<?= number_format($row['item_price'], 2) ?> <!-- Price from products table -->
+                                                    $<?= number_format($row['item_price'], 2) ?>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-                                                    <?= htmlspecialchars($row['quantity']) ?> <!-- Display quantity -->
+                                                    <?= htmlspecialchars($row['quantity']) ?>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-                                                    <div class="text-gray-900">$<?= number_format($lineTotal, 2) ?></div>
+                                                    <div class="text-gray-900">$<?= number_format($row['total_price'], 2) ?></div>
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-                                                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium <?= $row['status'] == 'completed' ? 'bg-green-100 text-green-800' : ($row['status'] == 'canceled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') ?>">
+                                                    <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium 
+                                                        <?= $row['status'] == 'shipped' ? 'bg-green-100 text-green-800' : ($row['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : ($row['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : ($row['status'] == 'delivered' ? 'bg-blue-100 text-blue-800' : ($row['status'] == 'refunded' ? 'bg-gray-100 text-gray-800' : '')))) ?>">
                                                         <?= htmlspecialchars($row['status']) ?>
                                                     </span>
+
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500"><?= htmlspecialchars($row['created_at']) ?></td>
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

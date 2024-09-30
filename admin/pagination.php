@@ -69,6 +69,5 @@ function pagination_link($page, $label, $is_active = false)
 </div>
 
 <?php
-// Close database connection
 $conn->close();
 ?>

@@ -50,30 +50,7 @@
   $result = $conn->query($sql);
   ?>
 
-  <header>
-    <nav
-      class="flex items-center justify-between p-6 lg:px-8"
-      aria-label="Global">
-      <div class="flex lg:flex-1">
-        <a href="./" class="-m-1.5 p-1.5">
-          <span class="sr-only">Your Company</span>
-          <img
-            class="h-8 w-auto"
-            src="../public/images/logo.svg"
-            alt="" />
-        </a>
-      </div>
-      <div class="hidden lg:flex lg:gap-x-12">
-        <a href="./products.php" class="text-sm font-semibold leading-6 text-green-500">Products</a>
-        <a href="./users.php" class="text-sm font-semibold leading-6 text-gray-900">Users</a>
-      </div>
-      <div class="hidden lg:flex lg:flex-1 lg:justify-end justify-center items-center gap-2">
-        <img class="inline-block h-8 w-8 rounded-full object-cover" src="https://cdn.oneesports.gg/cdn-data/2023/04/Anime_DemonSlayer_Muzan_3-450x253.jpg" alt="">
-        <span class="text-sm">Admin</span>
-      </div>
-    </nav>
-
-  </header>
+  <?php require_once "./components/header.php"; ?>
 
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">

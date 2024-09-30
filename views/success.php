@@ -1,10 +1,10 @@
 <?php
 require "../config/database.php";
+require "../utils/dd.php";
 session_start();
 
 $productId = $_SESSION['product_id'];
 $userId = $_SESSION['user_id'];
-$quantity = 1;
 
 $productQuery = "SELECT price FROM products WHERE id = ?";
 $productStmt = $conn->prepare($productQuery);
@@ -38,39 +38,20 @@ if ($product) {
             $updateStockStmt->bind_param("i", $productId);
             $updateStockStmt->execute();
 
-
-            $insertOrderQuery = "INSERT INTO orders (user_id, total_amount, status) VALUES (?, ?, 'completed')";
+            $insertOrderQuery = "INSERT INTO orders (user_id, product_id, quantity, total_price, status) VALUES (?, ?, ?, ?, ?)";
             $insertOrderStmt = $conn->prepare($insertOrderQuery);
-            $insertOrderStmt->bind_param("id", $userId, $productPrice);
-            $insertOrderStmt->execute();
-            $orderId = $insertOrderStmt->insert_id;
+            $status = 'pending';
+            $quantity = 1;
+            $insertOrderStmt->bind_param("iiids", $userId, $productId, $quantity, $productPrice, $status);
 
-            $checkOrderItemQuery = "SELECT quantity FROM order_items WHERE order_id = ? AND product_id = ?";
-            $checkOrderItemStmt = $conn->prepare($checkOrderItemQuery);
-            $checkOrderItemStmt->bind_param("ii", $orderId, $productId);
-            $checkOrderItemStmt->execute();
-            $checkOrderItemResult = $checkOrderItemStmt->get_result();
-
-            if ($checkOrderItemResult->num_rows > 0) {
-                $existingItem = $checkOrderItemResult->fetch_assoc();
-                $newQuantity = $existingItem['quantity'] + 1;
-                $updateQuantityQuery = "UPDATE order_items SET quantity = ? WHERE order_id = ? AND product_id = ?";
-                $updateQuantityStmt = $conn->prepare($updateQuantityQuery);
-                $updateQuantityStmt->bind_param("iii", $newQuantity, $orderId, $productId);
-                $updateQuantityStmt->execute();
-                $updateQuantityStmt->close();
+            if ($insertOrderStmt->execute()) {
             } else {
-                $insertOrderItemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
-                $insertOrderItemStmt = $conn->prepare($insertOrderItemQuery);
-                $insertOrderItemStmt->bind_param("iiid", $orderId, $productId, $quantity, $productPrice);
-                $insertOrderItemStmt->execute();
-                $insertOrderItemStmt->close();
+                echo "Error placing order: " . $insertOrderStmt->error;
             }
 
             $updateBalanceStmt->close();
             $updateStockStmt->close();
             $insertOrderStmt->close();
-            $checkOrderItemStmt->close();
         } else {
             echo "Insufficient balance.";
             exit();

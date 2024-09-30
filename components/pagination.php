@@ -1,19 +1,14 @@
 <?php
-// Assume current page and items per page are provided via query parameters
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$items_per_page = 12;  // You can adjust this value
+$items_per_page = 12;
 
-// Fetch total results from the database (replace with your actual logic)
-$total_results = 97;  // Replace with the actual count from your database
+$total_results = 97;
 
-// Calculate the total number of pages
 $total_pages = ceil($total_results / $items_per_page);
 
-// Calculate the starting and ending items on the current page
 $start_item = ($current_page - 1) * $items_per_page + 1;
 $end_item = min($current_page * $items_per_page, $total_results);
 
-// Generate pagination links
 function pagination_link($page, $label, $is_active = false)
 {
     $class = $is_active ? 'bg-green-600 text-white' : 'text-gray-900 hover:bg-gray-50';

@@ -52,7 +52,6 @@ document.addEventListener("DOMContentLoaded", function () {
     menuVisible = !menuVisible;
 
     if (menuVisible) {
-      // Show the menu with animation
       flyoutMenu.classList.remove("hidden");
       gsap.fromTo(
         flyoutMenu,
@@ -67,7 +66,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       );
     } else {
-      // Hide the menu with animation
       gsap.to(flyoutMenu, {
         opacity: 0,
         y: -10,
@@ -78,14 +76,11 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // Update aria-expanded attribute
     productButton.setAttribute("aria-expanded", menuVisible);
   }
 
-  // Add click event listener to the product button
   productButton.addEventListener("click", toggleMenu);
 
-  // Optional: close the menu when clicking outside of it
   document.addEventListener("click", function (event) {
     if (
       !productButton.contains(event.target) &&
