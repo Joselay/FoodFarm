@@ -21,4 +21,4 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
 
 2.	Navigate to the project directory:
    ```bash
-    cd FoodFarm
+   cd FoodFarm
