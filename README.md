@@ -1,16 +1,20 @@
 # FoodFarm
 
-FoodFarm is a simple e-commerce application built with vanilla PHP, focusing on CRUD (Create, Read, Update, Delete) operations. This project provides a basic framework for managing products, allowing users to add, view, edit, and delete items in an online shop.
+FoodFarm is an e-commerce application built with vanilla PHP that enables users to perform CRUD (Create, Read, Update, Delete) operations on products. It serves as a foundation for managing an online shop, offering a seamless experience for product management.
 
 ## Features
 
-- **User-friendly interface:** Easy navigation for users to interact with the application.
-- **CRUD operations:** Manage products effectively with create, read, update, and delete functionalities.
-- **Responsive design:** Accessible on various devices and screen sizes.
+- **User-Friendly Interface:** Intuitive navigation for easy interaction.
+- **CRUD Operations:** Fully functional product management including:
+  - Add new products
+  - View product listings
+  - Edit existing products
+  - Delete products
+- **Responsive Design:** Accessible across various devices and screen sizes.
+- **Custom Components:** Modular design for enhanced functionality.
 
 ## Installation
 
 1. Clone the repository:
-   
    ```bash
-   https://github.com/Joselay/FoodFarm.git
+   git clone https://github.com/Joselay/FoodFarm.git
