@@ -37,10 +37,10 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
 
 Usage
 
-	•	Use the “Add Product” feature to create new product entries.
-	•	View all products in the “Product List” section.
-	•	Edit existing products as necessary.
-	•	Delete products that are no longer available.
+•	Use the “Add Product” feature to create new product entries.
+•	View all products in the “Product List” section.
+•	Edit existing products as necessary.
+•	Delete products that are no longer available.
 
 Contributing
 
@@ -48,8 +48,9 @@ Contributions are welcome! If you’d like to contribute to the project, please 
 
 Author
 
-Your Name
-Your GitHub Profile
+Joselay: https://github.com/Joselay
+Sokhen: https://github.com/simsokhen70
+
 
 License
 
