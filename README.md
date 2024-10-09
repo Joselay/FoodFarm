@@ -39,6 +39,24 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
    http://localhost/FoodFarm
    ```
 
+## Database Dump
+
+The project includes a SQL dump file for setting up the database. You can import this file into your MySQL server to create the necessary tables and sample data.
+
+### Database Dump File
+
+- **Filename:** `foodfarm_database_dump.sql`
+- **Description:** This SQL script creates the `FoodFarm` database and the `products` table, along with some sample data.
+- **Usage:**
+  1. Open your MySQL command line or a tool like phpMyAdmin.
+  2. Import the `foodfarm_database_dump.sql` file to set up the database structure and sample data.
+
+### Importing the Database
+
+You can import the SQL dump using the following command in the MySQL command line:
+```bash
+mysql -u username -p < path/to/foodfarm_database_dump.sql
+
 ## Usage
 
 - Use the “Add Product” feature to create new product entries.
