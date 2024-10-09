@@ -21,8 +21,16 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
    
    git clone https://github.com/Joselay/FoodFarm.git
 
-3.	Navigate to the project directory:
+2.	Navigate to the project directory:
    
      ```bash
 
      cd FoodFarm
+
+3.	Set up a local server (e.g., XAMPP, MAMP, WAMP) and place the project folder in the htdocs directory in this project we'll use WAMP.
+   
+4.	Access the application via your web browser:
+
+      ```bash
+
+      http://localhost/FoodFarm
