@@ -74,7 +74,3 @@ Contributions are welcome! If you’d like to contribute to the project, please 
 
 - Joselay: [GitHub](https://github.com/Joselay)
 - Sokhen: [GitHub](https://github.com/simsokhen70)
-
-## License 📄
-
-This project is open-source and available under the MIT License.
