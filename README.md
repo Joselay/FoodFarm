@@ -5,12 +5,15 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
 ## Features
 
 - **User-Friendly Interface:** Intuitive navigation for easy interaction.
+  
 - **CRUD Operations:** Fully functional product management including:
+  
   - Add new products
   - View product listings
   - Edit existing products
   - Delete products
 - **Responsive Design:** Accessible across various devices and screen sizes.
+  
 - **Custom Components:** Modular design for enhanced functionality.
 
 ## Installation
