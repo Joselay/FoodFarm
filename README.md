@@ -34,3 +34,23 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
       ```bash
 
       http://localhost/FoodFarm
+
+Usage
+
+	•	Use the “Add Product” feature to create new product entries.
+	•	View all products in the “Product List” section.
+	•	Edit existing products as necessary.
+	•	Delete products that are no longer available.
+
+Contributing
+
+Contributions are welcome! If you’d like to contribute to the project, please fork the repository and submit a pull request.
+
+Author
+
+Your Name
+Your GitHub Profile
+
+License
+
+This project is open-source and available under the MIT License.
