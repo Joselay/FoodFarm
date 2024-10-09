@@ -57,22 +57,3 @@ You can import the SQL dump using the following command in the MySQL command lin
 ```bash
 mysql -u username -p < path/to/foodfarm_database_dump.sql
 
-## Usage
-
-- Use the “Add Product” feature to create new product entries.
-- View all products in the “Product List” section.
-- Edit existing products as necessary.
-- Delete products that are no longer available.
-
-## Contributing
-
-Contributions are welcome! If you’d like to contribute to the project, please fork the repository and submit a pull request.
-
-## Author
-
-- Joselay: https://github.com/Joselay
-- Sokhen: https://github.com/simsokhen70
-
-## License
-
-This project is open-source and available under the MIT License.
