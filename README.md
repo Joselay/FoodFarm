@@ -1,23 +1,23 @@
-# FoodFarm
+# FoodFarm 🥕🛒
 
 FoodFarm is an e-commerce application built with vanilla PHP that enables users to perform CRUD (Create, Read, Update, Delete) operations on products. It serves as a foundation for managing an online shop, offering a seamless experience for product management.
 
-## Features
+## Features 🌟
 
-- **User-Friendly Interface:** Intuitive navigation for easy interaction.
+- **User-Friendly Interface:** Intuitive navigation for easy interaction. 👩‍💻
   
 - **CRUD Operations:** Fully functional product management including:
   
-  - Add new products
-  - View product listings
-  - Edit existing products
-  - Delete products
+  - ➕ Add new products
+  - 🛍️ View product listings
+  - ✏️ Edit existing products
+  - ❌ Delete products
   
-- **Responsive Design:** Accessible across various devices and screen sizes.
+- **Responsive Design:** Accessible across various devices and screen sizes. 📱💻
   
-- **Custom Components:** Modular design for enhanced functionality.
+- **Custom Components:** Modular design for enhanced functionality. ⚙️
 
-## Installation
+## Installation ⚙️
 
 1. Clone the repository:
    
@@ -39,7 +39,7 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
    http://localhost/FoodFarm
    ```
 
-## Database Dump
+## Database Dump 💾
 
 The project includes a SQL dump file for setting up the database. You can import this file into your MySQL server to create the necessary tables and sample data.
 
@@ -48,31 +48,33 @@ The project includes a SQL dump file for setting up the database. You can import
 - **Filename:** `foodfarm_database_dump.sql`
 - **Description:** This SQL script creates the `FoodFarm` database and the `products` table, along with some sample data.
 - **Usage:**
-  1. Open your MySQL command line or a tool like phpMyAdmin.
+  1. Open your MySQL command line or a tool like phpMyAdmin. 🖥️
   2. Import the `foodfarm_database_dump.sql` file to set up the database structure and sample data.
 
 ### Importing the Database
 
 You can import the SQL dump using the following command in the MySQL command line:
 
-  ```bash
-  mysql -u username -p < path/to/foodfarm_database_dump.sql
-  ```
+```bash
+mysql -u username -p < path/to/foodfarm_database_dump.sql
+```
 
-## Usage
+## Usage 🛠️
 
-- Use the “Add Product” feature to create new product entries.
-- View all products in the “Product List” section.
-- Edit existing products as necessary.
-- Delete products that are no longer available.
+- Use the “Add Product” feature to create new product entries. ➕
+- View all products in the “Product List” section. 🛒
+- Edit existing products as necessary. ✏️
+- Delete products that are no longer available. ❌
 
-## Contributing
+## Contributing 🤝
 
 Contributions are welcome! If you’d like to contribute to the project, please fork the repository and submit a pull request.
 
-## Author
+## Author ✍️
 
-- Joselay: https://github.com/Joselay
-- Sokhen: https://github.com/simsokhen70
+- Joselay: [GitHub](https://github.com/Joselay)
+- Sokhen: [GitHub](https://github.com/simsokhen70)
 
+## License 📄
 
+This project is open-source and available under the MIT License.
