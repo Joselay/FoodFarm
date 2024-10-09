@@ -12,6 +12,7 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
   - View product listings
   - Edit existing products
   - Delete products
+  
 - **Responsive Design:** Accessible across various devices and screen sizes.
   
 - **Custom Components:** Modular design for enhanced functionality.
@@ -21,29 +22,29 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
 1. Clone the repository:
    
    ```bash
-   
    git clone https://github.com/Joselay/FoodFarm.git
+   ```
 
-2.	Navigate to the project directory:
+2. Navigate to the project directory:
    
-     ```bash
+   ```bash
+   cd FoodFarm
+   ```
 
-     cd FoodFarm
-
-3.	Set up a local server (e.g., XAMPP, MAMP, WAMP) and place the project folder in the htdocs directory in this project we'll use WAMP.
+3. Set up a local server (e.g., XAMPP, MAMP, WAMP) and place the project folder in the htdocs directory. In this project, we'll use WAMP.
    
-4.	Access the application via your web browser:
+4. Access the application via your web browser:
 
-      ```bash
-
-      http://localhost/FoodFarm
+   ```bash
+   http://localhost/FoodFarm
+   ```
 
 ## Usage
 
-•	Use the “Add Product” feature to create new product entries.
-•	View all products in the “Product List” section.
-•	Edit existing products as necessary.
-•	Delete products that are no longer available.
+- Use the “Add Product” feature to create new product entries.
+- View all products in the “Product List” section.
+- Edit existing products as necessary.
+- Delete products that are no longer available.
 
 ## Contributing
 
@@ -51,9 +52,8 @@ Contributions are welcome! If you’d like to contribute to the project, please 
 
 ## Author
 
-Joselay: https://github.com/Joselay
-Sokhen: https://github.com/simsokhen70
-
+- Joselay: https://github.com/Joselay
+- Sokhen: https://github.com/simsokhen70
 
 ## License
 
