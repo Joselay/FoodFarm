@@ -18,3 +18,7 @@ FoodFarm is an e-commerce application built with vanilla PHP that enables users 
 1. Clone the repository:
    ```bash
    git clone https://github.com/Joselay/FoodFarm.git
+
+2.	Navigate to the project directory:
+   ```bash
+    cd FoodFarm
