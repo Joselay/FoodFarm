@@ -1,8 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "jose", "jose", "jose");
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once "../config/database.php";
 
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $items_per_page = 12;

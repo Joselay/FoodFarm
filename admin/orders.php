@@ -17,16 +17,7 @@
 <body style="font-family: 'Inter'">
 
     <?php
-    $servername = "localhost";
-    $username = "jose";
-    $password = "jose";
-    $dbname = "jose";
-
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
-    }
+    require_once "../config/database.php";
 
     $showToast = isset($_GET['status']) && $_GET['status'] === 'success';
 

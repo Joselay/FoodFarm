@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 if (!isset($_SESSION['user_id'])) {
   header("Location: ./signin.php");
@@ -14,6 +15,7 @@ $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 require_once '../config/database.php';
 require_once "../utils/dd.php";
+
 
 $sql = "SELECT * FROM products WHERE id = ?";
 $stmt = $conn->prepare($sql);

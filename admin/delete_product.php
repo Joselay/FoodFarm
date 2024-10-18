@@ -1,14 +1,5 @@
 <?php
-$servername = "localhost";
-$username = "jose";
-$password = "jose";
-$dbname = "jose";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+require_once "../config/database.php";
 
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $id = intval($_GET['id']);

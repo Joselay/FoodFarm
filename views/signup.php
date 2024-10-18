@@ -1,10 +1,5 @@
 <?php
-try {
-    $pdo = new PDO('mysql:host=localhost;dbname=jose', 'jose', 'jose');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo "Connection failed: " . $e->getMessage();
-}
+require_once "../config/database.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
@@ -18,24 +13,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif ($password !== $confirmPassword) {
         $error = "Passwords do not match!";
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
 
         if ($user) {
             $error = "Email already exists!";
         } else {
             $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-            $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role,image_url) VALUES (?, ?, ?, 'user', ?)");
-            $stmt->execute([$username, $email, $hashedPassword, $imageUrl === "" ? 'https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg' : $imageUrl]);
+            if (empty($imageUrl)) {
+                $imageUrl = 'https://static.vecteezy.com/system/resources/thumbnails/009/292/244/small/default-avatar-icon-of-social-media-user-vector.jpg';
+            }
+
+            $stmt = $conn->prepare("INSERT INTO users (username, email, password, role, image_url) VALUES (?, ?, ?, 'user', ?)");
+            $stmt->bind_param("ssss", $username, $email, $hashedPassword, $imageUrl);
+            $stmt->execute();
 
             header("Location: signin.php");
             exit();
         }
+
+        $stmt->close();
     }
 }
+
+$conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

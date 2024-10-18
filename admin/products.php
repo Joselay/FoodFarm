@@ -23,16 +23,7 @@
 <body style="font-family: 'Inter'">
 
   <?php
-  $servername = "localhost";
-  $username = "jose";
-  $password = "jose";
-  $dbname = "jose";
-
-  $conn = new mysqli($servername, $username, $password, $dbname);
-
-  if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-  }
+  require_once "../config/database.php";
 
   $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
   $items_per_page = 12;
