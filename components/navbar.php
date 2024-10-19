@@ -1,6 +1,7 @@
 <?php
 $BASE_NAME = basename($_SERVER['REQUEST_URI']) === 'foodfarm' ? 'index.php' : basename($_SERVER['REQUEST_URI']);
 
+
 $_SESSION['language'] = $_SESSION['language'] !== null ? $_SESSION['language'] : Language::English->value;
 
 // Check if the language is being changed

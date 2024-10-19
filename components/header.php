@@ -1,5 +1,4 @@
 <?php
-
 define('BASE_URL', '/foodfarm/public/');
 define('PROFILE', '/foodfarm/views/profile.php');
 define('SIGNOUT', '/foodfarm/views/signout.php');
@@ -43,7 +42,7 @@ if (file_exists($languageFile)) {
         <div class="flex justify-center items-center gap-6">
             <div class="flex justify-center items-center gap-6">
                 <div class="hidden lg:flex">
-                    <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                    <form method="POST" action="<?php echo htmlspecialchars($params); ?>">
                         <input type="hidden" name="language" value="<?php echo $language === 'en-US' ? 'km-KH' : 'en-US'; ?>">
                         <button type="submit" class="flex items-center text-gray-700 hover:text-gray-800">
                             <img src="../public/images/<?php echo $language === 'km-KH' ? 'khmer.webp' : 'english.svg'; ?>" class="w-8 h-6" alt="">
