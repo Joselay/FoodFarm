@@ -10,6 +10,7 @@ $translations = [
   'signin_button' => 'ចូល',
   'not_a_member' => 'មិន​ទាន់​ជា​សមាជិក?',
   'create_account' => 'បង្កើតគណនីមួយ',
+  'create_account_title' => 'បង្កើតគណនី',
   'announcement' => 'កំពុងប្រកាសអំពីការប្រកួតរង្វាន់លើកថ្មីរបស់យើង។',
   'read_more' => 'អានបន្ថែម',
   'hero_title' => 'ថ្មី និង ដើមស្រស់ ពីកសិកម្ម',
@@ -57,4 +58,5 @@ $translations = [
   'already_have_account' => 'មានគណនីរួចហើយ?',
   'sign_in' => 'ចូល',
   'sign_up_to_your_account' => 'ចុះឈ្មោះទៅគណនីរបស់អ្នក',
+  'see_all_reviews' => 'មើលការវាយតម្លៃទាំង {reviews_count}',
 ];

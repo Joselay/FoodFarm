@@ -10,6 +10,7 @@ $translations = [
     'signin_button' => 'Sign in',
     'not_a_member' => 'Not a member yet?',
     'create_account' => 'Create an account',
+    'create_account_title' => 'Create account',
     'announcement' => 'Announcing our next round of funding.',
     'read_more' => 'Read more',
     'hero_title' => 'Fresh and Organic from the Farm',
@@ -57,4 +58,5 @@ $translations = [
     'already_have_account' => 'Already have an account?',
     'sign_in' => 'Sign In',
     'sign_up_to_your_account' => 'Sign up to your account',
+    'see_all_reviews' => 'See all {reviews_count} reviews',
 ];

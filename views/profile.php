@@ -14,6 +14,7 @@ require "../utils/dd.php";
 
 
 
+
 // Language handling
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['language'])) {
   $_SESSION['language'] = $_POST['language'];
@@ -68,6 +69,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
   }
 }
+require_once "../utils/language.php";
+require_once '../config/database.php';
+require_once '../enums/Language.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+
+// Check if the language is being changed
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['language'])) {
+  $language = $_POST['language'];
+  $_SESSION['language'] = $language; // Update the session with the new language
+  header("Location: " . $_SERVER['PHP_SELF']); // Redirect to refresh the page
+  exit();
+}
+
+// Get the current language from the session or default to English
+$language = $_SESSION['language'] ?? Language::English->value; // Using the enum for default language
+
+// Load the corresponding language file
+$languageFile = "../i18n/{$language}.php";
+if (file_exists($languageFile)) {
+  require_once $languageFile;
+} else {
+  require_once "../i18n/en-US.php"; // Fallback to English if file doesn't exist
+}
+
+// Fetch products
+$sql = "SELECT id, name, price, image_url FROM products";
+$result = $conn->query($sql);
+
+// Check if user is logged in and get user ID from session
+$userId = $_SESSION['user_id'] ?? null;
+$userData = null; // Variable to hold user data
+
+// Fetch user information if user is logged in
+if ($userId) {
+  $userSql = "SELECT id, username, email, image_url FROM users WHERE id = ?";
+  $stmt = $conn->prepare($userSql);
+  $stmt->bind_param("i", $userId); // Bind the user ID as an integer
+  $stmt->execute();
+  $userResult = $stmt->get_result();
+
+  if ($userResult->num_rows > 0) {
+    $userData = $userResult->fetch_assoc(); // Fetch user data
+  } else {
+    echo "No user found.";
+  }
+}
+
 mysqli_close($conn);
 ?>
 
@@ -86,12 +138,14 @@ mysqli_close($conn);
     href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
     rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../public/js/script.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
 </head>
 
 
 <body style="font-family: <?php echo $fontFamily; ?>;" style="font-family: 'Inter';">
-  <?php require "../components/header.php"; ?>
+  <?php require "../components/navbar.php"; ?>
 
   <div class="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
     <h1 class="sr-only">General Settings</h1>
@@ -224,6 +278,116 @@ mysqli_close($conn);
       saveBtn.classList.toggle('hidden');
       button.classList.toggle('hidden');
     }
+    // JavaScript to animate dropdown using GSAP
+    document.addEventListener("DOMContentLoaded", function() {
+      const userMenuButton = document.getElementById("user-menu-button");
+      const dropdownMenu = document.getElementById("menu");
+
+      // Function to toggle dropdown visibility with animation
+      userMenuButton.addEventListener("click", function() {
+        const isHidden = dropdownMenu.classList.contains("hidden");
+
+        if (isHidden) {
+          // Remove hidden class for animation
+          dropdownMenu.classList.remove("hidden");
+          gsap.fromTo(dropdownMenu, {
+            opacity: 0,
+            scaleY: 0
+          }, {
+            opacity: 1,
+            scaleY: 1,
+            duration: 0.3,
+            transformOrigin: "top",
+            ease: "power2.out"
+          });
+        } else {
+          // Animate closing the menu
+          gsap.to(dropdownMenu, {
+            opacity: 0,
+            scaleY: 0,
+            duration: 0.3,
+            onComplete: () => dropdownMenu.classList.add("hidden")
+          });
+        }
+      });
+
+      document.addEventListener("click", function(event) {
+        if (!userMenuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+          gsap.to(dropdownMenu, {
+            opacity: 0,
+            scaleY: 0,
+            duration: 0.3,
+            onComplete: () => dropdownMenu.classList.add("hidden")
+          });
+        }
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const images = document.querySelectorAll('.image');
+
+      images.forEach((image, index) => {
+        gsap.fromTo(image, {
+          opacity: 0,
+          scale: 0
+        }, {
+          opacity: 1,
+          scale: 1,
+          duration: 0.8,
+        });
+      });
+    });
+
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const textContent = document.querySelector("#text-content");
+      const cursor = document.querySelector("#cursor");
+      const text = "<?php echo addslashes($translations['hero_title']); ?>"; // Use the new translation key
+
+      const typingSpeed = 200; // Speed for typing letters (milliseconds)
+      const delayBeforeRestart = 1000; // Delay before restarting after fade-out (milliseconds)
+      const fadeDuration = 500; // Cursor fade-out duration (milliseconds)
+
+      function startTypingAnimation() {
+        textContent.textContent = ''; // Clear the text content
+        cursor.style.opacity = '1'; // Ensure the cursor is visible
+        let index = 0;
+
+        // Typing effect
+        function typeLetter() {
+          if (index < text.length) {
+            textContent.textContent += text.charAt(index); // Add next letter
+            index++;
+            setTimeout(typeLetter, typingSpeed);
+          } else {
+            // Fade out the cursor after typing finishes
+            setTimeout(() => {
+              fadeOutCursor();
+            }, delayBeforeRestart);
+          }
+        }
+
+        // Function to fade out the cursor before restarting
+        function fadeOutCursor() {
+          let opacity = 1;
+          const fade = setInterval(() => {
+            if (opacity > 0) {
+              opacity -= 0.05;
+              cursor.style.opacity = opacity.toString();
+            } else {
+              clearInterval(fade);
+              textContent.textContent = ''; // Clear the text for looping
+              startTypingAnimation(); // Restart the animation
+            }
+          }, fadeDuration / 20); // Adjust fade-out steps based on duration
+        }
+
+        typeLetter(); // Start typing animation
+      }
+
+      startTypingAnimation(); // Start typing and looping
+    });
   </script>
 </body>
 
