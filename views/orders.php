@@ -1,5 +1,6 @@
 <?php
 require "../utils/dd.php";
+
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -7,12 +8,25 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+
+require_once "../utils/language.php";
+require_once "../enums/Language.php";
 require "../config/database.php";
+
+
+// Language handling
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['language'])) {
+    $_SESSION['language'] = $_POST['language'];
+}
+
+
 
 $userId = $_SESSION['user_id'];
 $userName = $_SESSION['user_username'];
 $userEmail = $_SESSION['user_email'];
 $imageUrl = $_SESSION['user_image_url'];
+$language = $_SESSION['language'] ?? 'en-US';
+
 
 $sql = "
     SELECT o.id AS order_id, 
@@ -55,7 +69,7 @@ if (!$result) {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body style="font-family: 'Inter';">
+<body style="font-family: <?php echo $fontFamily; ?>;" style="font-family: 'Inter';">
     <?php require "../components/header.php"; ?>
 
     <div class="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
@@ -67,7 +81,7 @@ if (!$result) {
                             <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                            Profile
+                            <?= $translations['profile'] ?>
                         </a>
                     </li>
                     <li>
@@ -75,7 +89,8 @@ if (!$result) {
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
                             </svg>
-                            Orders
+                            <?= $translations['orders'] ?>
+
                         </a>
                     </li>
                 </ul>
@@ -87,7 +102,9 @@ if (!$result) {
                 <div class="px-4 sm:px-6 lg:px-8">
                     <div class="sm:flex sm:items-center">
                         <div class="sm:flex-auto">
-                            <h1 class="text-2xl font-bold leading-6 text-gray-900">Orders</h1>
+                            <h1 class="text-2xl font-bold leading-6 text-gray-900">
+                                <?= $translations['orders'] ?>
+                            </h1>
                         </div>
                     </div>
                     <div class="mt-8 flow-root">
@@ -96,13 +113,13 @@ if (!$result) {
                                 <table class="min-w-full divide-y divide-gray-300">
                                     <thead>
                                         <tr>
-                                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0">Order ID</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Product</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Unit Price</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Quantity</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Total Amount</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Status</th>
-                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Created At</th>
+                                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-0"><?= $translations['order_id'] ?></th>
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><?= $translations['product'] ?></th>
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><?= $translations['unit_price'] ?></th>
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><?= $translations['quantity'] ?></th>
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><?= $translations['total_amount'] ?></th>
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><?= $translations['status'] ?></th>
+                                            <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"><?= $translations['created_at'] ?></th>
                                         </tr>
                                     </thead>
 
@@ -129,14 +146,15 @@ if (!$result) {
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
                                                     <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium 
-                                                        <?= $row['status'] == 'shipped' ? 'bg-green-100 text-green-800' : ($row['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : ($row['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : ($row['status'] == 'delivered' ? 'bg-blue-100 text-blue-800' : ($row['status'] == 'refunded' ? 'bg-gray-100 text-gray-800' : '')))) ?>">
-                                                        <?= htmlspecialchars($row['status']) ?>
+                <?= $row['status'] == 'shipped' ? 'bg-green-100 text-green-800' : ($row['status'] == 'pending' ? 'bg-yellow-100 text-yellow-800' : ($row['status'] == 'cancelled' ? 'bg-red-100 text-red-800' : ($row['status'] == 'delivered' ? 'bg-blue-100 text-blue-800' : ($row['status'] == 'refunded' ? 'bg-gray-100 text-gray-800' : '')))) ?>">
+                                                        <?= htmlspecialchars($translations[$row['status']]) ?>
                                                     </span>
-
                                                 </td>
                                                 <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500"><?= htmlspecialchars($row['created_at']) ?></td>
                                             </tr>
                                         <?php endwhile; ?>
+
+
                                     </tbody>
                                 </table>
                             </div>

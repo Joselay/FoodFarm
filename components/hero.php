@@ -1,20 +1,18 @@
 <?php
-session_start();
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ./views/signin.php");
     exit();
 }
 
+require_once "./utils/language.php"; // Adjust the path as needed
+$_SESSION['language'] = 'en-US'; // Store language in session
+
 $userName = $_SESSION['user_username'];
 $imageUrl = $_SESSION['user_image_url'];
-
-
 ?>
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-
 
 <div class="bg-white">
     <?php require "header.php"; ?>
@@ -26,15 +24,20 @@ $imageUrl = $_SESSION['user_image_url'];
         <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
             <div class="hidden sm:mb-8 sm:flex sm:justify-center">
                 <div class="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                    Announcing our next round of funding. <a href="#" class="font-semibold text-green-600"><span class="absolute inset-0" aria-hidden="true"></span>Read more <span aria-hidden="true">&rarr;</span></a>
+                    <?php echo $translations['announcement']; ?>
+                    <a href="#" class="font-semibold text-green-600">
+                        <span class="absolute inset-0" aria-hidden="true"></span>
+                        <?php echo $translations['read_more']; ?>
+                        <span aria-hidden="true">&rarr;</span>
+                    </a>
                 </div>
             </div>
             <div class="text-center">
-                <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Fresh and Organic from the Farm</h1>
-                <p class="mt-6 text-lg leading-8 text-gray-600">Discover a world of wholesome goodness at FoodFarm. We bring you the freshest, organically grown produce.</p>
+                <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl"><?php echo $translations['hero_title']; ?></h1>
+                <p class="mt-6 text-lg leading-8 text-gray-600"><?php echo $translations['hero_description']; ?></p>
                 <div class="mt-10 flex items-center justify-center gap-x-6">
-                    <a href="#products" class="rounded-md bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600">Get started</a>
-                    <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
+                    <a href="#products" class="rounded-md bg-green-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"><?php echo $translations['get_started']; ?></a>
+                    <a href="#" class="text-sm font-semibold leading-6 text-gray-900"><?php echo $translations['learn_more']; ?> <span aria-hidden="true">→</span></a>
                 </div>
             </div>
         </div>

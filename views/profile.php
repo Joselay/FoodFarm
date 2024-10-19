@@ -1,17 +1,33 @@
 <?php
 session_start();
 
+// Check for user session and redirect to signin if not logged in
 if (!isset($_SESSION['user_id'])) {
   header("Location: ./views/signin.php");
-  exit();
+  exit(); // Ensure no further output occurs
 }
-require "../config/database.php";
 
+require "../config/database.php";
+require_once "../utils/language.php";
+require_once "../enums/Language.php";
+require "../utils/dd.php";
+
+
+
+// Language handling
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['language'])) {
+  $_SESSION['language'] = $_POST['language'];
+}
+
+// Retrieve user information and balance
 $userName = $_SESSION['user_username'];
 $userEmail = $_SESSION['user_email'];
 $imageUrl = $_SESSION['user_image_url'];
-
 $userId = $_SESSION['user_id'];
+$language = $_SESSION['language'] ?? 'en-US';
+
+
+// Fetch user balance
 $sql = "SELECT balance FROM users WHERE id = $userId";
 $result = mysqli_query($conn, $sql);
 
@@ -22,7 +38,7 @@ if ($result) {
   echo "Error fetching balance: " . mysqli_error($conn);
 }
 
-
+// Process updates if any
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (!empty($_POST['new_username']) && $_POST['new_username'] !== $userName) {
     $newUsername = mysqli_real_escape_string($conn, $_POST['new_username']);
@@ -51,10 +67,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       echo "Error updating password: " . mysqli_error($conn);
     }
   }
-
-  mysqli_close($conn);
 }
+mysqli_close($conn);
 ?>
+
 
 
 <!DOCTYPE html>
@@ -74,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 
 
-<body style="font-family: 'Inter';">
+<body style="font-family: <?php echo $fontFamily; ?>;" style="font-family: 'Inter';">
   <?php require "../components/header.php"; ?>
 
   <div class="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
@@ -89,7 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               <svg class="h-6 w-6 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Profile
+              <?= $translations['profile'] ?>
             </a>
           </li>
           <li>
@@ -97,7 +113,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
               </svg>
-              Orders
+              <?= $translations['orders'] ?>
+
             </a>
           </li>
         </ul>
@@ -116,42 +133,56 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
         <div>
-          <h2 class="text-base font-semibold leading-7 text-gray-900">Profile</h2>
-          <p class="mt-1 text-sm leading-6 text-gray-500">This information will be displayed publicly so be careful what you share.</p>
+          <h2 class="text-base font-semibold leading-7 text-gray-900">
+            <?= $translations['profile'] ?>
+          </h2>
+          <p class="mt-1 text-sm leading-6 text-gray-500"> <?= $translations['profile_description'] ?>
+          </p>
 
           <dl class="mt-6 space-y-6 divide-y divide-gray-100 border-t border-gray-200 text-sm leading-6">
             <div class="pt-6 sm:flex">
-              <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Username</dt>
+              <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                <?= $translations['username'] ?>
+
+              </dt>
               <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
                 <div class="text-gray-900" id="username-display"><?= $userName; ?></div>
                 <form id="update-form" method="POST">
                   <input type="text" name="new_username" id="username-input" class="hidden border border-gray-300 p-2" value="<?= $userName; ?>" />
                 </form>
-                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="toggleEdit(this)">Update</button>
-                <button type="submit" form="update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="save-btn">Save</button>
+                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="toggleEdit(this)"><?= $translations['update'] ?></button>
+                <button type="submit" form="update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="save-btn"><?= $translations['save'] ?></button>
               </dd>
             </div>
 
             <div class="pt-6 sm:flex">
-              <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Email address</dt>
+              <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                <?= $translations['email_address'] ?>
+              </dt>
               <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
                 <div class="text-gray-900" id="email-display"><?= $userEmail; ?></div>
                 <form id="email-update-form" method="POST">
                   <input type="text" name="new_email" id="email-input" class="hidden border border-gray-300 p-2" value="<?= $userEmail; ?>" />
                 </form>
-                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="toggleEmailEdit(this)">Update</button>
-                <button type="submit" form="email-update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="email-save-btn">Save</button>
+                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="toggleEmailEdit(this)"><?= $translations['update'] ?></button>
+                <button type="submit" form="email-update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="email-save-btn"><?= $translations['save'] ?></button>
               </dd>
             </div>
             <div class="pt-6 sm:flex">
-              <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">Password</dt>
+              <dt class="font-medium text-gray-900 sm:w-64 sm:flex-none sm:pr-6">
+                <?= $translations['password'] ?>
+
+              </dt>
               <dd class="mt-1 flex justify-between gap-x-6 sm:mt-0 sm:flex-auto">
                 <div class="text-gray-900" id="password-display">●●●●●●●●●●</div>
                 <form id="password-update-form" method="POST">
                   <input type="password" name="new_password" id="password-input" class="hidden border border-gray-300 p-2" placeholder="Enter new password" />
                 </form>
-                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="togglePasswordEdit(this)">Update</button>
-                <button type="submit" form="password-update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="password-save-btn">Save</button>
+                <button type="button" class="font-semibold text-green-600 hover:text-green-500" onclick="togglePasswordEdit(this)">
+                  <?= $translations['update'] ?>
+
+                </button>
+                <button type="submit" form="password-update-form" class="hidden font-semibold text-blue-600 hover:text-blue-500" id="password-save-btn"><?= $translations['save'] ?></button>
               </dd>
             </div>
 
