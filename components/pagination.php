@@ -35,7 +35,6 @@ function pagination_link($page, $label, $is_active = false)
         </div>
         <div>
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <!-- Previous Page Link -->
                 <a href="?page=<?= max(1, $current_page - 1) ?>" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
                     <span class="sr-only">Previous</span>
                     <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -43,7 +42,6 @@ function pagination_link($page, $label, $is_active = false)
                     </svg>
                 </a>
 
-                <!-- Pagination Links -->
                 <?php for ($page = 1; $page <= $total_pages; $page++): ?>
                     <?php if ($page == $current_page): ?>
                         <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-green-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"><?= $page ?></a>
@@ -52,7 +50,6 @@ function pagination_link($page, $label, $is_active = false)
                     <?php endif; ?>
                 <?php endfor; ?>
 
-                <!-- Next Page Link -->
                 <a href="?page=<?= min($total_pages, $current_page + 1) ?>" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
                     <span class="sr-only">Next</span>
                     <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

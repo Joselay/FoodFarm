@@ -8,50 +8,43 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 $_SESSION['language'] = $_SESSION['language'] !== null ? $_SESSION['language'] : Language::English->value;
 
-// Check if the language is being changed
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['language'])) {
   $language = $_POST['language'];
-  $_SESSION['language'] = $language; // Update the session with the new language
-  header("Location: " . $_SERVER['PHP_SELF']); // Redirect to refresh the page
+  $_SESSION['language'] = $language;
+  header("Location: " . $_SERVER['PHP_SELF']);
   exit();
 }
 
-// Get the current language from the session or default to English
-$language = $_SESSION['language'] ?? Language::English->value; // Using the enum for default language
+$language = $_SESSION['language'] ?? Language::English->value;
 
-// Load the corresponding language file
 $languageFile = "./i18n/{$language}.php";
 if (file_exists($languageFile)) {
   require_once $languageFile;
 } else {
-  require_once "./i18n/en-US.php"; // Fallback to English if file doesn't exist
+  require_once "./i18n/en-US.php";
 }
 
-// Fetch products
 $sql = "SELECT id, name, price, image_url FROM products";
 $result = $conn->query($sql);
 
-// Check if user is logged in and get user ID from session
 $userId = $_SESSION['user_id'] ?? null;
-$userData = null; // Variable to hold user data
+$userData = null;
 
-// Fetch user information if user is logged in
 if ($userId) {
   $userSql = "SELECT id, username, email, image_url FROM users WHERE id = ?";
   $stmt = $conn->prepare($userSql);
-  $stmt->bind_param("i", $userId); // Bind the user ID as an integer
+  $stmt->bind_param("i", $userId);
   $stmt->execute();
   $userResult = $stmt->get_result();
 
   if ($userResult->num_rows > 0) {
-    $userData = $userResult->fetch_assoc(); // Fetch user data
+    $userData = $userResult->fetch_assoc();
   } else {
     echo "No user found.";
   }
 }
 
 
-// Close the database connection
 $conn->close();
 ?>
 
@@ -68,6 +61,7 @@ $conn->close();
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="public/js/script.js"></script>
+
   <style>
     html {
       scroll-behavior: smooth;
@@ -76,9 +70,7 @@ $conn->close();
     .blink {
       animation: blink 1s steps(2, start) infinite;
       font-weight: normal;
-      /* Ensures cursor matches text styling */
       margin-left: 2px;
-      /* Slight space between text and cursor */
     }
 
     @keyframes blink {
@@ -100,55 +92,21 @@ $conn->close();
 
 <body style="font-family: <?php echo $fontFamily; ?>;" style="font-family: 'Inter';">
 
+  <?php require "./components/command-palette.php"; ?>
+  <?php require "./components/top-banner.php"; ?>
+  <?php require "./components/confirm_cookie.php"; ?>
+
+
   <div class="bg-white">
 
-    <div class="relative z-40 lg:hidden" role="dialog" aria-modal="true">
-
-      <div class="fixed inset-0 bg-black bg-opacity-25" aria-hidden="true"></div>
-
-      <div class="fixed inset-0 z-40 flex">
-
-        <div class="relative flex w-full max-w-xs flex-col overflow-y-auto bg-white pb-12 shadow-xl">
-          <div class="flex px-4 pb-2 pt-5">
-            <button type="button" class="relative -m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400">
-              <span class="absolute -inset-0.5"></span>
-              <span class="sr-only">Close menu</span>
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-
-          <div class="space-y-6 border-t border-gray-200 px-4 py-6">
-            <div class="flow-root">
-              <a href="#" class="-m-2 block p-2 font-medium text-gray-900">Sign in</a>
-            </div>
-            <div class="flow-root">
-              <a href="#" class="-m-2 block p-2 font-medium text-gray-900">Create account</a>
-            </div>
-          </div>
-
-          <div class="border-t border-gray-200 px-4 py-6">
-            <a href="#" class="-m-2 flex items-center p-2">
-              <img src="https://tailwindui.com/img/flags/flag-canada.svg" alt="" class="block h-auto w-5 flex-shrink-0">
-              <span class="ml-3 block text-base font-medium text-gray-900">English</span>
-              <span class="sr-only">, change currency</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <header class="relative overflow-hidden">
-      <!-- Top navigation -->
       <?php require "./components/navbar.php"; ?>
 
-      <!-- Hero section -->
       <div class=" pb-80 pt-16 sm:pb-40 sm:pt-24 lg:pb-48 lg:pt-40">
         <div class="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
           <div class="sm:max-w-lg flex flex-col gap-8">
             <div class="relative inline-block">
-              <h1 id="typing-heading" class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              <h1 id="typing-heading" class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl min-h-[7.5rem]">
                 <span id="text-content"></span><span id="cursor" class="blink">|</span>
               </h1>
             </div>
@@ -158,7 +116,6 @@ $conn->close();
           </div>
           <div>
             <div class="mt-10">
-              <!-- Decorative image grid -->
               <div aria-hidden="true" class="pointer-events-none lg:absolute lg:inset-y-0 lg:mx-auto lg:w-full lg:max-w-7xl">
                 <div class="absolute transform sm:left-1/2 sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8">
                   <div class="flex items-center space-x-6 lg:space-x-8">
@@ -203,7 +160,6 @@ $conn->close();
     </header>
 
     <main>
-      <!-- Category section -->
       <section aria-labelledby="category-heading" class="bg-gray-50">
         <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div class="sm:flex sm:items-baseline sm:justify-between">
@@ -263,7 +219,6 @@ $conn->close();
         </div>
       </section>
 
-      <!-- Featured section -->
       <section aria-labelledby="cause-heading">
         <div class="relative bg-gray-800 px-6 py-32 sm:px-12 sm:py-40 lg:px-16">
           <div class="absolute inset-0 overflow-hidden">
@@ -280,7 +235,6 @@ $conn->close();
         </div>
       </section>
 
-      <!-- Favorites section -->
       <section aria-labelledby="favorites-heading" id="products">
         <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div class="sm:flex sm:items-baseline sm:justify-between">
@@ -318,7 +272,6 @@ $conn->close();
         </div>
       </section>
 
-      <!-- CTA section -->
 
     </main>
 
@@ -425,19 +378,15 @@ $conn->close();
       </div>
     </footer>
   </div>
-  <!-- Your HTML content -->
   <script>
-    // JavaScript to animate dropdown using GSAP
     document.addEventListener("DOMContentLoaded", function() {
       const userMenuButton = document.getElementById("user-menu-button");
       const dropdownMenu = document.getElementById("menu");
 
-      // Function to toggle dropdown visibility with animation
       userMenuButton.addEventListener("click", function() {
         const isHidden = dropdownMenu.classList.contains("hidden");
 
         if (isHidden) {
-          // Remove hidden class for animation
           dropdownMenu.classList.remove("hidden");
           gsap.fromTo(dropdownMenu, {
             opacity: 0,
@@ -450,7 +399,6 @@ $conn->close();
             ease: "power2.out"
           });
         } else {
-          // Animate closing the menu
           gsap.to(dropdownMenu, {
             opacity: 0,
             scaleY: 0,
@@ -492,32 +440,29 @@ $conn->close();
     document.addEventListener("DOMContentLoaded", function() {
       const textContent = document.querySelector("#text-content");
       const cursor = document.querySelector("#cursor");
-      const text = "<?php echo addslashes($translations['hero_title']); ?>"; // Use the new translation key
+      const text = "<?php echo addslashes($translations['hero_title']); ?>";
 
-      const typingSpeed = 200; // Speed for typing letters (milliseconds)
-      const delayBeforeRestart = 1000; // Delay before restarting after fade-out (milliseconds)
-      const fadeDuration = 500; // Cursor fade-out duration (milliseconds)
+      const typingSpeed = 200;
+      const delayBeforeRestart = 1000;
+      const fadeDuration = 500;
 
       function startTypingAnimation() {
-        textContent.textContent = ''; // Clear the text content
-        cursor.style.opacity = '1'; // Ensure the cursor is visible
+        textContent.textContent = '';
+        cursor.style.opacity = '1';
         let index = 0;
 
-        // Typing effect
         function typeLetter() {
           if (index < text.length) {
-            textContent.textContent += text.charAt(index); // Add next letter
+            textContent.textContent += text.charAt(index);
             index++;
             setTimeout(typeLetter, typingSpeed);
           } else {
-            // Fade out the cursor after typing finishes
             setTimeout(() => {
               fadeOutCursor();
             }, delayBeforeRestart);
           }
         }
 
-        // Function to fade out the cursor before restarting
         function fadeOutCursor() {
           let opacity = 1;
           const fade = setInterval(() => {
@@ -526,16 +471,16 @@ $conn->close();
               cursor.style.opacity = opacity.toString();
             } else {
               clearInterval(fade);
-              textContent.textContent = ''; // Clear the text for looping
-              startTypingAnimation(); // Restart the animation
+              textContent.textContent = '';
+              startTypingAnimation();
             }
-          }, fadeDuration / 20); // Adjust fade-out steps based on duration
+          }, fadeDuration / 20);
         }
 
-        typeLetter(); // Start typing animation
+        typeLetter();
       }
 
-      startTypingAnimation(); // Start typing and looping
+      startTypingAnimation();
     });
   </script>
 

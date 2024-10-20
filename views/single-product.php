@@ -10,7 +10,6 @@ if (isset($_GET['id'])) {
     $_SESSION['params'] = $params;
     $id = $_GET['id'];
 
-    // Prepare SQL query
     $sql = "SELECT * FROM products WHERE id = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $id);
@@ -39,20 +38,12 @@ if (isset($_GET['id'])) {
 
 
 
-    // If no product is found, show a 404 page
     if (!$product) {
-        // Option 1: Redirect to a custom 404 page
         header("HTTP/1.0 404 Not Found");
-        header("Location: /foodfarm/views/404.php"); // Create this 404.php page
+        header("Location: /foodfarm/views/404.php");
         exit();
-
-        // Option 2: Display a 404 message directly (instead of redirecting)
-        // echo "<h1>404 Not Found</h1>";
-        // echo "<p>The product you are looking for does not exist.</p>";
-        // exit();
     }
 } else {
-    // Redirect to home page if no id is set
     header("Location: /foodfarm");
     exit();
 }
@@ -61,9 +52,11 @@ shuffle($limit_products);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$userName = $_SESSION['user_username'];
-$userEmail = $_SESSION['user_email'];
-$imageUrl = $_SESSION['user_image_url'];
+if (isset($_SESSION['user_id'])) {
+    $userName = $_SESSION['user_username'];
+    $userEmail = $_SESSION['user_email'];
+    $imageUrl = $_SESSION['user_image_url'];
+}
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -73,49 +66,42 @@ $_SESSION['product_id'] = $product['id'];
 
 $_SESSION['language'] = $_SESSION['language'] !== null ? $_SESSION['language'] : Language::English->value;
 
-// Check if the language is being changed
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['language'])) {
     $language = $_POST['language'];
-    $_SESSION['language'] = $language; // Update the session with the new language
-    header("Location: " . $_SERVER['PHP_SELF']); // Redirect to refresh the page
+    $_SESSION['language'] = $language;
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
 
-// Get the current language from the session or default to English
-$language = $_SESSION['language'] ?? Language::English->value; // Using the enum for default language
+$language = $_SESSION['language'] ?? Language::English->value;
 
-// Load the corresponding language file
 $languageFile = "../i18n/{$language}.php";
 if (file_exists($languageFile)) {
     require_once $languageFile;
 } else {
-    require_once "../i18n/en-US.php"; // Fallback to English if file doesn't exist
+    require_once "../i18n/en-US.php";
 }
 
-// Fetch products
 $sql = "SELECT id, name, price, image_url FROM products";
 $result = $conn->query($sql);
 
-// Check if user is logged in and get user ID from session
 $userId = $_SESSION['user_id'] ?? null;
-$userData = null; // Variable to hold user data
+$userData = null;
 
-// Fetch user information if user is logged in
 if ($userId) {
     $userSql = "SELECT id, username, email, image_url FROM users WHERE id = ?";
     $stmt = $conn->prepare($userSql);
-    $stmt->bind_param("i", $userId); // Bind the user ID as an integer
+    $stmt->bind_param("i", $userId);
     $stmt->execute();
     $userResult = $stmt->get_result();
 
     if ($userResult->num_rows > 0) {
-        $userData = $userResult->fetch_assoc(); // Fetch user data
+        $userData = $userResult->fetch_assoc();
     } else {
         echo "No user found.";
     }
 }
 
-// $reviews_sql = "SELECT * FROM reviews WHERE product_id = 55";
 $reviews_sql = "
     SELECT reviews.*, users.username AS username, users.image_url AS user_image 
     FROM reviews 
@@ -127,8 +113,32 @@ $reviews_count = $reviews_result->num_rows;
 $see_all_reviews = $language === Language::English->value ? "See all {reviews_count} reviews" : "មើលការវាយតម្លៃទាំងអស់ {reviews_count}";
 $reviews_dynamic = str_replace("{reviews_count}", $reviews_count, $see_all_reviews);
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $quantityChoice = intval($_POST['quantity-choice']);
+    $productPrice = floatval($_POST['product_price']);
+    $stockQuantity = intval($_POST['stock_quantity']);
 
-// Close the database connection
+    $totalPrice = $quantityChoice * $productPrice;
+
+    if ($quantityChoice > $stockQuantity) {
+        echo "Not enough stock available!";
+        exit();
+    }
+
+    $userId = $_SESSION['user_id'];
+    $stmt = $conn->prepare("INSERT INTO cart (user_id, product_id, quantity, total_price) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("iiid", $userId, $productId, $quantityChoice, $totalPrice);
+    $stmt->execute();
+
+    $newStockQuantity = $stockQuantity - $quantityChoice;
+    $updateStmt = $conn->prepare("UPDATE products SET stock_quantity = ? WHERE id = ?");
+    $updateStmt->bind_param("ii", $newStockQuantity, $productId);
+    $updateStmt->execute();
+
+    header("Location: success.php");
+    exit();
+}
+
 $conn->close();
 ?>
 
@@ -172,7 +182,6 @@ $conn->close();
                             <?= $product['price'] ?>
                         </p>
                     </div>
-                    <!-- Reviews -->
                     <div class="mt-4">
                         <h2 class="sr-only">Reviews</h2>
                         <div class="flex items-center">
@@ -181,7 +190,6 @@ $conn->close();
                                 <span class="sr-only"> out of 5 stars</span>
                             </p>
                             <div class="ml-1 flex items-center">
-                                <!-- Active: "text-yellow-400", Inactive: "text-gray-200" -->
                                 <svg class="h-5 w-5 flex-shrink-0 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M10.868 2.884c-.321-.772-1.415-.772-1.736 0l-1.83 4.401-4.753.381c-.833.067-1.171 1.107-.536 1.651l3.62 3.102-1.106 4.637c-.194.813.691 1.456 1.405 1.02L10 15.591l4.069 2.485c.713.436 1.598-.207 1.404-1.02l-1.106-4.637 3.62-3.102c.635-.544.297-1.584-.536-1.65l-4.752-.382-1.831-4.401z" clip-rule="evenodd" />
                                 </svg>
@@ -208,7 +216,6 @@ $conn->close();
                     </div>
                 </div>
 
-                <!-- Image gallery -->
                 <div class="mt-8 lg:col-span-7 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mt-0">
                     <h2 class="sr-only">Images</h2>
 
@@ -219,110 +226,13 @@ $conn->close();
                 </div>
 
                 <div class="mt-8 lg:col-span-5">
-                    <form>
-                        <!-- Color picker -->
-                        <div>
-                            <h2 class="text-sm font-medium text-gray-900">
-                                <?= $translations['color'] ?>
-                            </h2>
-
-                            <fieldset aria-label="Choose a color" class="mt-2">
-                                <div class="flex items-center space-x-3">
-                                    <!-- Active and Checked: "ring ring-offset-1" -->
-                                    <div class="rounded-full p-0.5 border border-2 border-white hover:border-black transition duration-200">
-                                        <label aria-label="Black" class="relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 ring-gray-900 focus:outline-none">
-                                            <input type="radio" name="color-choice" value="Black" class="sr-only">
-                                            <span aria-hidden="true" class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-gray-900"></span>
-                                        </label>
-                                    </div>
-                                    <!-- Active and Checked: "ring ring-offset-1" -->
-                                    <div class="rounded-full p-0.5 border border-2 border-white hover:border-gray-400">
-                                        <label aria-label="Heather Grey" class="relative -m-0.5 flex cursor-pointer items-center justify-center rounded-full p-0.5 ring-gray-400 focus:outline-none">
-                                            <input type="radio" name="color-choice" value="Heather Grey" class="sr-only">
-                                            <span aria-hidden="true" class="h-8 w-8 rounded-full border border-black border-opacity-10 bg-gray-400"></span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </div>
-
-                        <!-- Size picker -->
-                        <div class="mt-8">
-                            <div class="flex items-center justify-between">
-                                <h2 class="text-sm font-medium text-gray-900">
-                                    <?= $translations['size'] ?>
-                                </h2>
-                                <a href="#" class="text-sm font-medium text-green-600 hover:text-green-500">
-                                    <?= $translations['see_sizing_chart'] ?>
-                                </a>
-                            </div>
-
-                            <fieldset aria-label="Choose a size" class="mt-2">
-                                <div class="grid grid-cols-3 gap-3 sm:grid-cols-6">
-                                    <!--
-                  In Stock: "cursor-pointer", Out of Stock: "opacity-25 cursor-not-allowed"
-                  Active: "ring-2 ring-green-500 ring-offset-2"
-                  Checked: "border-transparent bg-green-600 text-white hover:bg-green-700", Not Checked: "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                -->
-                                    <label class="flex cursor-pointer items-center justify-center rounded-md border px-3 py-3 text-sm font-medium uppercase focus:outline-none sm:flex-1">
-                                        <input type="radio" name="size-choice" value="XXS" class="sr-only">
-                                        <span>XXS</span>
-                                    </label>
-                                    <!--
-                  In Stock: "cursor-pointer", Out of Stock: "opacity-25 cursor-not-allowed"
-                  Active: "ring-2 ring-green-500 ring-offset-2"
-                  Checked: "border-transparent bg-green-600 text-white hover:bg-green-700", Not Checked: "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                -->
-                                    <label class="flex cursor-pointer items-center justify-center rounded-md border px-3 py-3 text-sm font-medium uppercase focus:outline-none sm:flex-1">
-                                        <input type="radio" name="size-choice" value="XS" class="sr-only">
-                                        <span>XS</span>
-                                    </label>
-                                    <!--
-                  In Stock: "cursor-pointer", Out of Stock: "opacity-25 cursor-not-allowed"
-                  Active: "ring-2 ring-green-500 ring-offset-2"
-                  Checked: "border-transparent bg-green-600 text-white hover:bg-green-700", Not Checked: "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                -->
-                                    <label class="flex cursor-pointer items-center justify-center rounded-md border px-3 py-3 text-sm font-medium uppercase focus:outline-none sm:flex-1">
-                                        <input type="radio" name="size-choice" value="S" class="sr-only">
-                                        <span>S</span>
-                                    </label>
-                                    <!--
-                  In Stock: "cursor-pointer", Out of Stock: "opacity-25 cursor-not-allowed"
-                  Active: "ring-2 ring-green-500 ring-offset-2"
-                  Checked: "border-transparent bg-green-600 text-white hover:bg-green-700", Not Checked: "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                -->
-                                    <label class="flex cursor-pointer items-center justify-center rounded-md border px-3 py-3 text-sm font-medium uppercase focus:outline-none sm:flex-1 hover:border-green-500">
-                                        <input type="radio" name="size-choice" value="M" class="sr-only">
-                                        <span>M</span>
-                                    </label>
-                                    <!--
-                  In Stock: "cursor-pointer", Out of Stock: "opacity-25 cursor-not-allowed"
-                  Active: "ring-2 ring-green-500 ring-offset-2"
-                  Checked: "border-transparent bg-green-600 text-white hover:bg-green-700", Not Checked: "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                -->
-                                    <label class="flex cursor-pointer items-center justify-center rounded-md border px-3 py-3 text-sm font-medium uppercase focus:outline-none sm:flex-1">
-                                        <input type="radio" name="size-choice" value="L" class="sr-only">
-                                        <span>L</span>
-                                    </label>
-                                    <!--
-                  In Stock: "cursor-pointer", Out of Stock: "opacity-25 cursor-not-allowed"
-                  Active: "ring-2 ring-green-500 ring-offset-2"
-                  Checked: "border-transparent bg-green-600 text-white hover:bg-green-700", Not Checked: "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                -->
-                                    <label class="flex cursor-not-allowed items-center justify-center rounded-md border px-3 py-3 text-sm font-medium uppercase opacity-25 sm:flex-1">
-                                        <input type="radio" name="size-choice" value="XL" disabled class="sr-only">
-                                        <span>XL</span>
-                                    </label>
-                                </div>
-                            </fieldset>
-                        </div>
-
+                    <form method="POST" action="./checkout.php?id=<?= $id ?>">
                         <button type="submit" class="mt-8 flex w-full items-center justify-center rounded-md border border-transparent bg-green-600 px-8 py-3 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                             <?= $translations['add_to_cart'] ?>
                         </button>
                     </form>
 
-                    <!-- Product details -->
+
                     <div class="mt-10">
                         <h2 class="text-md font-medium text-gray-900">
                             <?= $translations['description'] ?>
@@ -349,7 +259,6 @@ $conn->close();
                         </div>
                     </div>
 
-                    <!-- Policies -->
                     <section aria-labelledby="policies-heading" class="mt-10">
                         <h2 id="policies-heading" class="sr-only">Our Policies</h2>
 
@@ -385,7 +294,6 @@ $conn->close();
                 </div>
             </div>
 
-            <!-- Reviews -->
             <section id="recently-review" aria-labelledby="reviews-heading" class="mt-16 sm:mt-24">
                 <h2 id="reviews-heading" class="text-lg font-medium text-gray-900">
                     <?= $translations['recent_reviews'] ?>
@@ -450,11 +358,9 @@ $conn->close();
                         <?php endwhile; ?>
                     <?php endif; ?>
 
-                    <!-- More reviews... -->
                 </div>
             </section>
 
-            <!-- Related products -->
             <section aria-labelledby="related-heading" class="mt-16 sm:mt-24">
                 <h2 id="related-heading" class="text-lg font-medium text-gray-900">
                     <?= $translations['customers_also_purchased'] ?>
@@ -498,12 +404,10 @@ $conn->close();
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="border-t border-gray-200 py-20">
                     <div class="grid grid-cols-1 md:grid-flow-col md:auto-rows-min md:grid-cols-12 md:gap-x-8 md:gap-y-16">
-                        <!-- Image section -->
                         <div class="col-span-1 md:col-span-2 lg:col-start-1 lg:row-start-1">
                             <img src="https://tailwindui.com/img/logos/mark.svg?color=green&shade=600" alt="" class="h-8 w-auto">
                         </div>
 
-                        <!-- Sitemap sections -->
                         <div class="col-span-6 mt-10 grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-8 md:col-start-3 md:row-start-1 md:mt-0 lg:col-span-6 lg:col-start-2">
                             <div class="grid grid-cols-1 gap-y-12 sm:col-span-2 sm:grid-cols-2 sm:gap-x-8">
                                 <div>
@@ -578,7 +482,6 @@ $conn->close();
                             </div>
                         </div>
 
-                        <!-- Newsletter section -->
                         <div class="mt-12 md:col-span-8 md:col-start-3 md:row-start-2 md:mt-0 lg:col-span-4 lg:col-start-9 lg:row-start-1">
                             <h3 class="text-sm font-medium text-gray-900">Sign up for our newsletter</h3>
                             <p class="mt-6 text-sm text-gray-500">The latest deals and savings, sent to your inbox weekly.</p>
@@ -600,17 +503,14 @@ $conn->close();
         </footer>
     </div>
     <script>
-        // JavaScript to animate dropdown using GSAP
         document.addEventListener("DOMContentLoaded", function() {
             const userMenuButton = document.getElementById("user-menu-button");
             const dropdownMenu = document.getElementById("menu");
 
-            // Function to toggle dropdown visibility with animation
             userMenuButton.addEventListener("click", function() {
                 const isHidden = dropdownMenu.classList.contains("hidden");
 
                 if (isHidden) {
-                    // Remove hidden class for animation
                     dropdownMenu.classList.remove("hidden");
                     gsap.fromTo(dropdownMenu, {
                         opacity: 0,
@@ -623,7 +523,6 @@ $conn->close();
                         ease: "power2.out"
                     });
                 } else {
-                    // Animate closing the menu
                     gsap.to(dropdownMenu, {
                         opacity: 0,
                         scaleY: 0,
@@ -665,32 +564,29 @@ $conn->close();
         document.addEventListener("DOMContentLoaded", function() {
             const textContent = document.querySelector("#text-content");
             const cursor = document.querySelector("#cursor");
-            const text = "<?php echo addslashes($translations['hero_title']); ?>"; // Use the new translation key
+            const text = "<?php echo addslashes($translations['hero_title']); ?>";
 
-            const typingSpeed = 200; // Speed for typing letters (milliseconds)
-            const delayBeforeRestart = 1000; // Delay before restarting after fade-out (milliseconds)
-            const fadeDuration = 500; // Cursor fade-out duration (milliseconds)
+            const typingSpeed = 200;
+            const delayBeforeRestart = 1000;
+            const fadeDuration = 500;
 
             function startTypingAnimation() {
-                textContent.textContent = ''; // Clear the text content
-                cursor.style.opacity = '1'; // Ensure the cursor is visible
+                textContent.textContent = '';
+                cursor.style.opacity = '1';
                 let index = 0;
 
-                // Typing effect
                 function typeLetter() {
                     if (index < text.length) {
-                        textContent.textContent += text.charAt(index); // Add next letter
+                        textContent.textContent += text.charAt(index);
                         index++;
                         setTimeout(typeLetter, typingSpeed);
                     } else {
-                        // Fade out the cursor after typing finishes
                         setTimeout(() => {
                             fadeOutCursor();
                         }, delayBeforeRestart);
                     }
                 }
 
-                // Function to fade out the cursor before restarting
                 function fadeOutCursor() {
                     let opacity = 1;
                     const fade = setInterval(() => {
@@ -699,16 +595,16 @@ $conn->close();
                             cursor.style.opacity = opacity.toString();
                         } else {
                             clearInterval(fade);
-                            textContent.textContent = ''; // Clear the text for looping
-                            startTypingAnimation(); // Restart the animation
+                            textContent.textContent = '';
+                            startTypingAnimation();
                         }
-                    }, fadeDuration / 20); // Adjust fade-out steps based on duration
+                    }, fadeDuration / 20);
                 }
 
-                typeLetter(); // Start typing animation
+                typeLetter();
             }
 
-            startTypingAnimation(); // Start typing and looping
+            startTypingAnimation();
         });
         const headerElement = document.querySelector("header.relative.bg-white");
         const childNodes = headerElement.childNodes;
@@ -716,6 +612,16 @@ $conn->close();
             if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() === "1") {
                 headerElement.removeChild(node);
             }
+        });
+        const sizeLabels = document.querySelectorAll('fieldset label');
+
+        sizeLabels.forEach(label => {
+            label.addEventListener('click', () => {
+                sizeLabels.forEach(lbl => {
+                    lbl.classList.remove('border-green-500');
+                });
+                label.classList.add('border-green-500');
+            });
         });
     </script>
 

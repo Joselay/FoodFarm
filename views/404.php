@@ -13,14 +13,7 @@
 </head>
 
 <body style="font-family: 'Inter';">
-    <!--
-  This example requires updating your template:
 
-  ```
-  <html class="h-full">
-  <body class="h-full">
-  ```
--->
     <main class="grid w-screen h-screen min-h-full place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8">
         <div class="text-center flex flex-col items-center justify-center">
             <img class="w-[70%] mb-8" src="../public/images/404.svg" alt="">

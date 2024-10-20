@@ -27,6 +27,19 @@ $userEmail = $_SESSION['user_email'];
 $imageUrl = $_SESSION['user_image_url'];
 $language = $_SESSION['language'] ?? 'en-US';
 
+$items_per_page = 5; // Adjust this value as needed
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+$total_orders_sql = "SELECT COUNT(*) as total_orders FROM orders WHERE user_id = ?";
+$stmt_total = $conn->prepare($total_orders_sql);
+$stmt_total->bind_param('i', $userId);
+$stmt_total->execute();
+$total_orders_result = $stmt_total->get_result();
+$total_orders_row = $total_orders_result->fetch_assoc();
+$total_orders = $total_orders_row['total_orders'];
+
+$total_pages = ceil($total_orders / $items_per_page);
 
 $sql = "
     SELECT o.id AS order_id, 
@@ -41,14 +54,14 @@ $sql = "
     LEFT JOIN products p ON o.product_id = p.id
     WHERE o.user_id = ?
     ORDER BY o.order_date DESC
+    LIMIT ? OFFSET ?
 ";
 
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $userId);
+$stmt->bind_param('iii', $userId, $items_per_page, $offset);
 $stmt->execute();
 $result = $stmt->get_result();
-
 
 if (!$result) {
     echo "Error fetching orders: " . mysqli_error($conn);
@@ -134,8 +147,9 @@ if ($userId) {
                     <li>
                         <a href="#" class="group flex gap-x-3 rounded-md bg-gray-50 py-2 pl-2 pr-3 text-sm font-semibold leading-6 text-green-600">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
                             </svg>
+
                             <?= $translations['orders'] ?>
 
                         </a>
@@ -209,7 +223,45 @@ if ($userId) {
                     </div>
                 </div>
             </div>
+            <div class="flex items-center justify-between mt-8 border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+                <div class="flex flex-1 justify-between sm:hidden">
+                    <a href="?page=<?= max(1, $current_page - 1) ?>" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Previous</a>
+                    <a href="?page=<?= min($total_pages, $current_page + 1) ?>" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Next</a>
+                </div>
+                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <p class="text-sm text-gray-700">
+                        Showing
+                        <span class="font-medium"><?= $offset + 1 ?></span>
+                        to
+                        <span class="font-medium"><?= min($offset + $items_per_page, $total_orders) ?></span>
+                        of
+                        <span class="font-medium"><?= $total_orders ?></span>
+                        results
+                    </p>
+                    <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <a href="?page=<?= max(1, $current_page - 1) ?>" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                            <span class="sr-only">Previous</span>
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+
+                        <?php for ($page = 1; $page <= $total_pages; $page++): ?>
+                            <a href="?page=<?= $page ?>" class="relative z-10 inline-flex items-center <?= $page == $current_page ? 'bg-green-600 text-white' : 'bg-white text-gray-900' ?> px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"><?= $page ?></a>
+                        <?php endfor; ?>
+
+                        <a href="?page=<?= min($total_pages, $current_page + 1) ?>" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0">
+                            <span class="sr-only">Next</span>
+                            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
         </main>
+
     </div>
 
     <script>
@@ -245,17 +297,14 @@ if ($userId) {
             saveBtn.classList.toggle('hidden');
             button.classList.toggle('hidden');
         }
-        // JavaScript to animate dropdown using GSAP
         document.addEventListener("DOMContentLoaded", function() {
             const userMenuButton = document.getElementById("user-menu-button");
             const dropdownMenu = document.getElementById("menu");
 
-            // Function to toggle dropdown visibility with animation
             userMenuButton.addEventListener("click", function() {
                 const isHidden = dropdownMenu.classList.contains("hidden");
 
                 if (isHidden) {
-                    // Remove hidden class for animation
                     dropdownMenu.classList.remove("hidden");
                     gsap.fromTo(dropdownMenu, {
                         opacity: 0,
@@ -268,7 +317,6 @@ if ($userId) {
                         ease: "power2.out"
                     });
                 } else {
-                    // Animate closing the menu
                     gsap.to(dropdownMenu, {
                         opacity: 0,
                         scaleY: 0,
@@ -310,32 +358,30 @@ if ($userId) {
         document.addEventListener("DOMContentLoaded", function() {
             const textContent = document.querySelector("#text-content");
             const cursor = document.querySelector("#cursor");
-            const text = "<?php echo addslashes($translations['hero_title']); ?>"; // Use the new translation key
+            const text = "<?php echo addslashes($translations['hero_title']); ?>";
 
-            const typingSpeed = 200; // Speed for typing letters (milliseconds)
-            const delayBeforeRestart = 1000; // Delay before restarting after fade-out (milliseconds)
-            const fadeDuration = 500; // Cursor fade-out duration (milliseconds)
+            const typingSpeed = 200;
+            const delayBeforeRestart = 1000;
+            const fadeDuration = 500;
 
             function startTypingAnimation() {
-                textContent.textContent = ''; // Clear the text content
-                cursor.style.opacity = '1'; // Ensure the cursor is visible
+                textContent.textContent = '';
+                cursor.style.opacity = '1';
                 let index = 0;
 
-                // Typing effect
                 function typeLetter() {
                     if (index < text.length) {
-                        textContent.textContent += text.charAt(index); // Add next letter
+                        textContent.textContent += text.charAt(index);
                         index++;
                         setTimeout(typeLetter, typingSpeed);
                     } else {
-                        // Fade out the cursor after typing finishes
+
                         setTimeout(() => {
                             fadeOutCursor();
                         }, delayBeforeRestart);
                     }
                 }
 
-                // Function to fade out the cursor before restarting
                 function fadeOutCursor() {
                     let opacity = 1;
                     const fade = setInterval(() => {
@@ -344,16 +390,16 @@ if ($userId) {
                             cursor.style.opacity = opacity.toString();
                         } else {
                             clearInterval(fade);
-                            textContent.textContent = ''; // Clear the text for looping
-                            startTypingAnimation(); // Restart the animation
+                            textContent.textContent = '';
+                            startTypingAnimation();
                         }
-                    }, fadeDuration / 20); // Adjust fade-out steps based on duration
+                    }, fadeDuration / 20);
                 }
 
-                typeLetter(); // Start typing animation
+                typeLetter();
             }
 
-            startTypingAnimation(); // Start typing and looping
+            startTypingAnimation();
         });
     </script>
 </body>

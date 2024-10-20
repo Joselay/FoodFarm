@@ -11,5 +11,7 @@
             "email": "tongmenglaysmae5@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "stripe/stripe-php": "^16.1"
+    }
 }

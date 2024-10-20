@@ -1,10 +1,9 @@
 <?php
 session_start();
 
-// Check for user session and redirect to signin if not logged in
 if (!isset($_SESSION['user_id'])) {
   header("Location: ./views/signin.php");
-  exit(); // Ensure no further output occurs
+  exit();
 }
 
 require "../config/database.php";
@@ -15,12 +14,10 @@ require "../utils/dd.php";
 
 
 
-// Language handling
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['language'])) {
   $_SESSION['language'] = $_POST['language'];
 }
 
-// Retrieve user information and balance
 $userName = $_SESSION['user_username'];
 $userEmail = $_SESSION['user_email'];
 $imageUrl = $_SESSION['user_image_url'];
@@ -28,7 +25,6 @@ $userId = $_SESSION['user_id'];
 $language = $_SESSION['language'] ?? 'en-US';
 
 
-// Fetch user balance
 $sql = "SELECT balance FROM users WHERE id = $userId";
 $result = mysqli_query($conn, $sql);
 
@@ -39,7 +35,6 @@ if ($result) {
   echo "Error fetching balance: " . mysqli_error($conn);
 }
 
-// Process updates if any
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   if (!empty($_POST['new_username']) && $_POST['new_username'] !== $userName) {
     $newUsername = mysqli_real_escape_string($conn, $_POST['new_username']);
@@ -78,43 +73,37 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 
-// Check if the language is being changed
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['language'])) {
   $language = $_POST['language'];
-  $_SESSION['language'] = $language; // Update the session with the new language
-  header("Location: " . $_SERVER['PHP_SELF']); // Redirect to refresh the page
+  $_SESSION['language'] = $language;
+  header("Location: " . $_SERVER['PHP_SELF']);
   exit();
 }
 
-// Get the current language from the session or default to English
-$language = $_SESSION['language'] ?? Language::English->value; // Using the enum for default language
+$language = $_SESSION['language'] ?? Language::English->value;
 
-// Load the corresponding language file
 $languageFile = "../i18n/{$language}.php";
 if (file_exists($languageFile)) {
   require_once $languageFile;
 } else {
-  require_once "../i18n/en-US.php"; // Fallback to English if file doesn't exist
+  require_once "../i18n/en-US.php";
 }
 
-// Fetch products
 $sql = "SELECT id, name, price, image_url FROM products";
 $result = $conn->query($sql);
 
-// Check if user is logged in and get user ID from session
 $userId = $_SESSION['user_id'] ?? null;
-$userData = null; // Variable to hold user data
+$userData = null;
 
-// Fetch user information if user is logged in
 if ($userId) {
   $userSql = "SELECT id, username, email, image_url FROM users WHERE id = ?";
   $stmt = $conn->prepare($userSql);
-  $stmt->bind_param("i", $userId); // Bind the user ID as an integer
+  $stmt->bind_param("i", $userId);
   $stmt->execute();
   $userResult = $stmt->get_result();
 
   if ($userResult->num_rows > 0) {
-    $userData = $userResult->fetch_assoc(); // Fetch user data
+    $userData = $userResult->fetch_assoc();
   } else {
     echo "No user found.";
   }
@@ -154,7 +143,6 @@ mysqli_close($conn);
       <nav class="flex-none px-4 sm:px-6 lg:px-0">
         <ul role="list" class="flex gap-x-3 gap-y-1 whitespace-nowrap lg:flex-col">
           <li>
-            <!-- Current: "bg-gray-50 text-green-600", Default: "text-gray-700 hover:text-green-600 hover:bg-gray-50" -->
             <a href="#" class="group flex gap-x-3 rounded-md bg-gray-50 py-2 pl-2 pr-3 text-sm font-semibold leading-6 text-green-600">
               <svg class="h-6 w-6 shrink-0 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -165,8 +153,9 @@ mysqli_close($conn);
           <li>
             <a href="./orders.php" class="group flex gap-x-3 rounded-md py-2 pl-2 pr-3 text-sm font-semibold leading-6 text-gray-700 hover:bg-gray-50 hover:text-green-600">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
               </svg>
+
               <?= $translations['orders'] ?>
 
             </a>
@@ -278,17 +267,14 @@ mysqli_close($conn);
       saveBtn.classList.toggle('hidden');
       button.classList.toggle('hidden');
     }
-    // JavaScript to animate dropdown using GSAP
     document.addEventListener("DOMContentLoaded", function() {
       const userMenuButton = document.getElementById("user-menu-button");
       const dropdownMenu = document.getElementById("menu");
 
-      // Function to toggle dropdown visibility with animation
       userMenuButton.addEventListener("click", function() {
         const isHidden = dropdownMenu.classList.contains("hidden");
 
         if (isHidden) {
-          // Remove hidden class for animation
           dropdownMenu.classList.remove("hidden");
           gsap.fromTo(dropdownMenu, {
             opacity: 0,
@@ -301,7 +287,6 @@ mysqli_close($conn);
             ease: "power2.out"
           });
         } else {
-          // Animate closing the menu
           gsap.to(dropdownMenu, {
             opacity: 0,
             scaleY: 0,
@@ -343,32 +328,29 @@ mysqli_close($conn);
     document.addEventListener("DOMContentLoaded", function() {
       const textContent = document.querySelector("#text-content");
       const cursor = document.querySelector("#cursor");
-      const text = "<?php echo addslashes($translations['hero_title']); ?>"; // Use the new translation key
+      const text = "<?php echo addslashes($translations['hero_title']); ?>";
 
-      const typingSpeed = 200; // Speed for typing letters (milliseconds)
-      const delayBeforeRestart = 1000; // Delay before restarting after fade-out (milliseconds)
-      const fadeDuration = 500; // Cursor fade-out duration (milliseconds)
+      const typingSpeed = 200;
+      const delayBeforeRestart = 1000;
+      const fadeDuration = 500;
 
       function startTypingAnimation() {
-        textContent.textContent = ''; // Clear the text content
-        cursor.style.opacity = '1'; // Ensure the cursor is visible
+        textContent.textContent = '';
+        cursor.style.opacity = '1';
         let index = 0;
 
-        // Typing effect
         function typeLetter() {
           if (index < text.length) {
-            textContent.textContent += text.charAt(index); // Add next letter
+            textContent.textContent += text.charAt(index);
             index++;
             setTimeout(typeLetter, typingSpeed);
           } else {
-            // Fade out the cursor after typing finishes
             setTimeout(() => {
               fadeOutCursor();
             }, delayBeforeRestart);
           }
         }
 
-        // Function to fade out the cursor before restarting
         function fadeOutCursor() {
           let opacity = 1;
           const fade = setInterval(() => {
@@ -377,16 +359,16 @@ mysqli_close($conn);
               cursor.style.opacity = opacity.toString();
             } else {
               clearInterval(fade);
-              textContent.textContent = ''; // Clear the text for looping
-              startTypingAnimation(); // Restart the animation
+              textContent.textContent = '';
+              startTypingAnimation();
             }
-          }, fadeDuration / 20); // Adjust fade-out steps based on duration
+          }, fadeDuration / 20);
         }
 
-        typeLetter(); // Start typing animation
+        typeLetter();
       }
 
-      startTypingAnimation(); // Start typing and looping
+      startTypingAnimation();
     });
   </script>
 </body>

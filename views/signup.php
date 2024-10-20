@@ -7,8 +7,8 @@ require_once "../utils/language.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['language'])) {
     $language = $_POST['language'];
-    $_SESSION['language'] = $language; // Update the session with the new language
-    header("Location: " . $_SERVER['PHP_SELF']); // Redirect to refresh the page
+    $_SESSION['language'] = $language;
+    header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
 
@@ -52,12 +52,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 $language = $_SESSION['language'] ?? Language::English->value;
 
-// Load the corresponding language file
 $languageFile = "../i18n/{$language}.php";
 if (file_exists($languageFile)) {
     require_once $languageFile;
 } else {
-    require_once "../i18n/en-US.php"; // Fallback to English if file doesn't exist
+    require_once "../i18n/en-US.php";
 }
 $conn->close();
 ?>

@@ -53,7 +53,7 @@ if ($product) {
             $updateStockStmt->close();
             $insertOrderStmt->close();
         } else {
-            echo "Insufficient balance.";
+            header("Location: /foodfarm/views/cancel.php");
             exit();
         }
     }

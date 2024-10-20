@@ -1,28 +1,25 @@
 <?php
 require "../utils/dd.php";
-require_once "../enums/Language.php"; // Import the Language enum
+require_once "../enums/Language.php";
 
 if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-// Check if the language is being changed
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['language'])) {
   $language = $_POST['language'];
-  $_SESSION['language'] = $language; // Update the session with the new language
-  header("Location: " . $_SERVER['PHP_SELF']); // Redirect to refresh the page
+  $_SESSION['language'] = $language;
+  header("Location: " . $_SERVER['PHP_SELF']);
   exit();
 }
 
-// Get the current language from the session or default to English
-$language = $_SESSION['language'] ?? Language::English->value; // Using the enum for default language
+$language = $_SESSION['language'] ?? Language::English->value;
 
-// Load the corresponding language file
 $languageFile = "../i18n/{$language}.php";
 if (file_exists($languageFile)) {
   require_once $languageFile;
 } else {
-  require_once "../i18n/en-US.php"; // Fallback to English if file doesn't exist
+  require_once "../i18n/en-US.php";
 }
 
 require_once "../config/database.php";
@@ -42,7 +39,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['language'])) {
     $user = $result->fetch_assoc();
 
     if (password_verify($password, $user['password'])) {
-      // Set session variables for the logged-in user
       $_SESSION['user_id'] = $user['id'];
       $_SESSION['user_role'] = $user['role'];
       $_SESSION['user_email'] = $user['email'];
@@ -53,14 +49,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !isset($_POST['language'])) {
       header("Location: /foodfarm");
       exit();
     } else {
-      $error = $translations['invalid_password']; // Use translated error message
+      $error = $translations['invalid_password'];
     }
   } else {
-    $error = $translations['no_user_found']; // Use translated error message
+    $error = $translations['no_user_found'];
   }
 }
 
-// Set font family based on language
 $fontFamily = ($language === Language::Khmer->value) ? "'Kantumruy Pro', sans-serif" : "'Inter', sans-serif";
 ?>
 
